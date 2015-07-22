@@ -1,25 +1,20 @@
 # -*- coding: utf-8 -*-
 import os
+from OLP.Readers.Reader import Reader
 
-class TableReader:
+class ContactReader(Reader):
     '''
-    the Reader can read table
+    the Reader can read product contact table
     '''
 
-    def __init__(self):
-        pass
+    def __init__(self, filenames, primKey):
+        self.filenames = filenames
+        self.primKey = primKey
 
-    def readTable(self, tablePathList):
-        """
-        Read the table.
-        :param tablePathList: a list[] that contains all TablePaths
-        :return: a list[] that contains all the elements that contained in table
-        """
+    def read(self):
         wholeTable = []
         for tablePath in tablePathList:
 
-            if not os.path.exists(tablePath):
-                raise IOError(tablePath)
 
             table = []
             tableObject = open(tablePath)
