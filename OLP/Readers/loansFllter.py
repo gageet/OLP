@@ -1,24 +1,85 @@
 # -*- coding: utf-8 -*-
-class LoansFilter:
+
+class Filter(object):
+
+	def filter(self, title2index, loans):
+		raise NotImplementedError
+
+
+class cleanedLoansFilter(Filter):
 
 	cleanedFlg = '结清标志'
-	fiveClassificationCode = '五级分类代码'
-	statData = '统计日期'
-	lendingData = '放款日期'
+	
 	def __init__(self):
 		pass
 
-	def filter(self,loanTable):
+	def filter(self, title2index, loans):
 		'''
-		we delete some records which obey three rules.
+		we delete some records which obey this rule.
 		'''
 		currLine = dict()
 		loanList = loanTable
 		for i in range(len(loanTable)):
-			currLine = loanTable[i]
+			loan = loanTable[i]
+			self.filtering(loan)
+
 			statDataList = currLine[self.statData].split('/')
 			lendingDataList = currLine[self.lendingData].split('/')
-			if (currLine[self.cleanedFlg] == '0') or (currLine[self.fiveClassificationCode] != '201') or (statDataList[0] == lendingDataList[0] and statDataList[1] == lendingDataList[1]):
+			if (currLine[self.cleanedFlg] == '0') or \
+				(currLine[self.fiveClassificationCode] != '201') or \
+				(statDataList[0] == lendingDataList[0] and statDataList[1] == lendingDataList[1]):
+				del loanList[i]
+		return	loanList
+
+
+class CustCodeFilter(Filter):
+
+	fiveClassificationCode = '五级分类代码'
+
+	def __init__(self):
+		pass
+
+	def filter(self, title2index, loans):
+		'''
+		we delete some records which obey this rule.
+		'''
+		currLine = dict()
+		loanList = loanTable
+		for i in range(len(loanTable)):
+			loan = loanTable[i]
+			self.filtering(loan)
+
+			statDataList = currLine[self.statData].split('/')
+			lendingDataList = currLine[self.lendingData].split('/')
+			if (currLine[self.cleanedFlg] == '0') or \
+				(currLine[self.fiveClassificationCode] != '201') or \
+				(statDataList[0] == lendingDataList[0] and statDataList[1] == lendingDataList[1]):
+				del loanList[i]
+		return	loanList
+
+class thisMonthLoanFilter(Filter):
+
+	statData = '统计日期'
+	lendingData = '放款日期'
+
+	def __init__(self):
+		pass
+
+	def filter(self, title2index, loans):
+		'''
+		we delete some records which obey this rule.
+		'''
+		currLine = dict()
+		loanList = loanTable
+		for i in range(len(loanTable)):
+			loan = loanTable[i]
+			self.filtering(loan)
+
+			statDataList = currLine[self.statData].split('/')
+			lendingDataList = currLine[self.lendingData].split('/')
+			if (currLine[self.cleanedFlg] == '0') or \
+				(currLine[self.fiveClassificationCode] != '201') or \
+				(statDataList[0] == lendingDataList[0] and statDataList[1] == lendingDataList[1]):
 				del loanList[i]
 		return	loanList
 
