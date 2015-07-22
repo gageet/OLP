@@ -18,3 +18,11 @@ class Classifier(object):
 
     def load(self, filename):
         self.clf = joblib.load(filename)
+
+
+def getClassifier(name, param):
+    modName, clsName = name.rsplit('.', 1)
+    mod = __import__(modName, globals(), locals(), [clsName], -1)
+    cls = getattr(mod, clsName)
+    clf = cls(**param)
+    return clf
