@@ -60,7 +60,7 @@ class LabelReader:
         whether the debt date's month equals to stat date's month. If so, return True.
         :param tableRecord:
         :return:
-        '''
+        ''' 
         debtDate = datetime.strptime(tableRecord[self.debtDate], "%Y/%m/%d")
         statDate = datetime.strptime(tableRecord[self.statDate], "%Y/%m/%d")
         if debtDate.year == statDate.year and debtDate.month == statDate.month:
