@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import json
 
 class LoanTableReader:
     '''
@@ -24,7 +25,7 @@ class LoanTableReader:
             lineNum = 0
             for line in loanTableObject:
                 if lineNum == 0:
-                    tableKey = [_.decode('utf-8') for _ in line.strip().split('\t')]
+                    tableKey = line.strip().split('\t')
                     lineNum = 1
                 else:
                     print tableKey[0]
@@ -39,4 +40,7 @@ class LoanTableReader:
 if __name__ == '__main__':
     print os.path.dirname(os.path.realpath(__file__))
     loanTable = LoanTableReader([os.path.dirname(os.path.realpath(__file__))+'\\2014-02-28.txt',])
-    print loanTable.read()
+    loanTableList = loanTable.read()
+    for dict in loanTableList:
+        for key in dict:
+            print key,dict[key]
