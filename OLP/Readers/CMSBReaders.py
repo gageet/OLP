@@ -28,15 +28,15 @@ class CMSBLoanReader(Reader):
             for line in inFile:
                 vals = line.strip().split('\t')
                 primKeyIndex = title2index[self.primKey]
-                primKeyNo = vals[primKeyIndex]
-                if primKeyNo not in loans:
+                primKeyVal = vals[primKeyIndex]
+                if primKeyVal not in loans:
                     loan = []
                     for j, val in enumerate(vals):
                         loan.append([''] * nMonths)
                         loan[j][i] = val
-                    loans[primKeyNo] = loan
+                    loans[primKeyVal] = loan
                 else:
-                    loan = loans[primKeyNo]
+                    loan = loans[primKeyVal]
                     for j, val in enumerate(vals):
                         loan[j][i] = val
 
