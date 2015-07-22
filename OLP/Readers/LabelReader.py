@@ -1,4 +1,4 @@
-# coding: -*- utf-8 -*-
+# -*- coding: utf-8 -*-
 
 from datetime import *
 
@@ -11,11 +11,11 @@ class LabelReader:
 
     # Notice!!!
     # the class variable will be defined by the imported config file
-    debtDate = ''
-    statDate = ''
-    lastRepayDate = ''
-    shouldRepayDate = ''
-    defaultDebtDate = ''
+    debtDate = 'debtDate'
+    statDate = 'statDate'
+    lastRepayDate = 'lastRepayDate'
+    shouldRepayDate = 'shouldRepayDate'
+    defaultDebtDate = 'defaultDebtDate'
 
 
     def __init__(self):
@@ -44,7 +44,7 @@ class LabelReader:
         :return: a dict{} contains keyNumber(as key) and reputation(as value)
         '''
         reputation = {}
-        reputation[tableRecord['primaryKey']] = self.calculateReputation(tableRecord)
+        reputation[tableRecord[primaryKey]] = self.calculateReputation(tableRecord)
         return reputation
 
     def calculateReputation(self, tableRecord):
@@ -57,20 +57,26 @@ class LabelReader:
 
     def rule1(self, tableRecord):
         '''
-        whether the debt date equals to stat date. If so, return True.
+        whether the debt date's month equals to stat date's month. If so, return True.
         :param tableRecord:
         :return:
-        '''
-        debtDate = tableRecord[self.debtDate]
-        statDate = tableRecord[self.statDate]
-        if debtDate == statDate:
+        ''' 
+        debtDate = datetime.strptime(tableRecord[self.debtDate], "%Y/%m/%d")
+        statDate = datetime.strptime(tableRecord[self.statDate], "%Y/%m/%d")
+        if debtDate.year == statDate.year and debtDate.month == statDate.month:
             return True
         else:
-            return self.rule2(self, tableRecord)
+            return self.rule2(tableRecord)
 
     def rule2(self, tableRecord):
-        lastRepayDate = datetime.strptime(tableRecord[self.lastRepayDate], "%Y//%m//%d")
-        shouldRepayDate = datetime.strptime(tableRecord[self.shouldRepayDate], "%Y//%m//%d")
+        lastRepayDate = datetime.strptime(tableRecord[self.lastRepayDate], "%Y/%m/%d")
+        shouldRepayDate = datetime.strptime(tableRecord[self.shouldRepayDate], "%Y/%m/%d")
         if lastRepayDate > shouldRepayDate or tableRecord[self.debtDate] == self.defaultDebtDate:
             return True
         return False
+
+if __name__ == '__main__':
+    list = [{'debtDate':'2000/1/1', 'statDate':'2000/1/9', 'lastRepayDate':'2000/1/1', 'shouldRepayDate':'2000/1/1', 'defaultDebtDate':'0001/1/1', 'pk':'lgj'}]
+    labelReader = LabelReader()
+    dic = labelReader.readLabel(list,'pk')
+    print dic
