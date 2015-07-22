@@ -1,29 +1,31 @@
 # -*- coding: utf-8 -*-
 import os
-import json
 
-class LoanTableReader:
+class TableReader:
     '''
-    the LoanTableReader
+    the Reader can read table
     '''
 
-    def __init__(self, loanTablePathList):
-        self.loanTablePathList = loanTablePathList
+    def __init__(self):
         pass
 
-    def read(self):
+    def readTable(self, tablePathList):
         """
-        Read the loanTable.
-        :param loanTablePathList: a list[] that contains all loanTablePaths
-        :return: a list[] that contains all the elements that contained in loanTable
+        Read the table.
+        :param tablePathList: a list[] that contains all TablePaths
+        :return: a list[] that contains all the elements that contained in table
         """
-        wholeLoanTable = []
-        for loanTablePath in self.loanTablePathList:
-            loanTable = []
-            loanTableObject = open(loanTablePath)
+        wholeTable = []
+        for tablePath in tablePathList:
+
+            if not os.path.exists(tablePath):
+                raise IOError(tablePath)
+
+            table = []
+            tableObject = open(tablePath)
             tableKey = []
             lineNum = 0
-            for line in loanTableObject:
+            for line in tableObject:
                 if lineNum == 0:
                     tableKey = line.strip().split('\t')
                     lineNum = 1
@@ -33,14 +35,15 @@ class LoanTableReader:
                     tableDict = {}
                     for elementNum in range(len(tableKey)):
                         tableDict[tableKey[elementNum]] = tableValue[elementNum]
-                    loanTable.append(tableDict)
-            wholeLoanTable.extend(loanTable)
-        return wholeLoanTable
+                    table.append(tableDict)
+            wholeTable.extend(table)
+        return wholeTable
+
 
 if __name__ == '__main__':
     print os.path.dirname(os.path.realpath(__file__))
-    loanTable = LoanTableReader([os.path.dirname(os.path.realpath(__file__))+'\\2014-02-28.txt',])
-    loanTableList = loanTable.read()
+    table = TableReader()
+    loanTableList = table.readTable([os.path.join(os.path.dirname(os.path.realpath(__file__)),'2014-02-28.txt',)])
     for dict in loanTableList:
         for key in dict:
             print key,dict[key]
