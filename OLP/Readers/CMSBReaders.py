@@ -55,12 +55,11 @@ class CMSBTransReader(Reader):
         self.primKey = primKey
 
     def read(self):
-        filenames = self.filenames
         title2index = {}
         transs = {}
 
         # 遍历nMonth月数据
-        for i, filename in enumerate(filenames):
+        for i, filename in enumerate(self.filenames):
             inFile = open(filename)
 
             # 读取第一行，获取字段名
