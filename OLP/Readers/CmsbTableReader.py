@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from os import listdir
 class TableReader:
 
 	def __init__(self):
@@ -32,7 +31,7 @@ class TableReader:
 		return transactionsMat
 
 
-if __name__ == '__main__':
-	s = TableReader()
-	dataMat = s.transTableReader(['microloanCustTrans2014-02-28.txt','microloanCustTrans2014-03-31.txt'])
-	print(dataMat)
+# if __name__ == '__main__':
+# 	s = TableReader()
+# 	dataMat = s.transTableReader(['microloanCustTrans2014-02-28.txt','microloanCustTrans2014-03-31.txt'])
+# 	print(dataMat)
