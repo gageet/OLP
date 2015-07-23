@@ -88,12 +88,14 @@ class CMSBTransReader(Reader):
 
 class ContactReader(Reader):
     '''
-    the Reader can read product contact table
+    产品签约表读取类
+    签约表数据结构: Table{ CustomerId : [ [tableRecordValue1, tableRecordValue1Date], [tableRecordValue2, tableRecordValue2Date], ……]}
     '''
 
-    # Notice!!!
-    # the class variable will be defined by the imported config file
+    # 注意！！！
+    # 下面的类变量需要从配置文件中读取
     signedProdCode = 'signedProdCode'
+    signedProdDate = 'signedProdDate'
 
     def __init__(self, filenames, primKey):
         self.filenames = filenames
@@ -107,16 +109,16 @@ class ContactReader(Reader):
             titleList = tableObject.readline().strip().split('\t')
             for index, title in enumerate(titleList):
                 title2index[title] = index
-            for index,value in enumerate(title2index):
-                print index,value
+            print tableObject,'abc'
 
             for tableRecord in tableObject:
                 tableList = tableRecord.strip().split('\t')
                 tableRecordKey = tableList[title2index[self.primKey]]
                 tableRecordValue = tableList[title2index[self.signedProdCode]]
+                tableRecordValueDate = tableList[title2index[self.signedProdDate]]
 
                 if tableRecordKey in wholeTable:
-                    wholeTable[tableRecordKey].append(tableRecordValue)
+                    wholeTable[tableRecordKey].append([tableRecordValue, tableRecordValueDate])
                 else:
-                    wholeTable[tableRecordKey] = [tableRecordValue,]
+                    wholeTable[tableRecordKey] = [[tableRecordValue, tableRecordValueDate],]
         return wholeTable
