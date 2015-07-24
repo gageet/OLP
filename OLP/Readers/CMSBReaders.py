@@ -89,7 +89,6 @@ class CMSBTransReader(Reader):
 class ContactReader(Reader):
     '''
     产品签约表读取类
-    签约表数据结构: Table{ CustomerId : [ [tableRecordValue1, tableRecordValue1Date], [tableRecordValue2, tableRecordValue2Date], ……]}
     '''
 
     # 注意！！！
@@ -102,6 +101,10 @@ class ContactReader(Reader):
         self.primKey = primKey
 
     def read(self):
+        '''
+        读取产品签约表
+        :return: Table{ CustomerId : [ [tableRecordValue1, tableRecordValue1Date], [tableRecordValue2, tableRecordValue2Date], ……]}
+        '''
         wholeTable = {}
         for tablePath in self.filenames:
             tableObject = open(tablePath)
