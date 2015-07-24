@@ -103,7 +103,7 @@ class ContactReader(Reader):
     def read(self):
         '''
         读取产品签约表
-        :return: Table{ CustomerId : [ [tableRecordValue1, tableRecordValue1Date], [tableRecordValue2, tableRecordValue2Date], ……]}
+        :return: ({title:index, title:index, ……}{ CustomerId : [ [tableRecordValue1, tableRecordValue1Date], [tableRecordValue2, tableRecordValue2Date], ……]})
         '''
         wholeTable = {}
         for tablePath in self.filenames:
@@ -124,4 +124,4 @@ class ContactReader(Reader):
                     wholeTable[tableRecordKey].append([tableRecordValue, tableRecordValueDate])
                 else:
                     wholeTable[tableRecordKey] = [[tableRecordValue, tableRecordValueDate],]
-        return wholeTable
+        return title2index, wholeTable
