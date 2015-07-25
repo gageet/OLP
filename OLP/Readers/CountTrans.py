@@ -71,7 +71,7 @@ class CountTrans:
 if __name__ == '__main__':
     from CMSBReaders import CMSBTransReader
     from ReaderTools import UniPrinter
-    trans = CMSBTransReader(['trans.txt',],'业务标识').read()
+    trans = CMSBTransReader(['2014_02_10Transactions.txt',],'业务标识').read()
     UniPrinter().pprint(trans)
     countTrans = CountTrans(trans)
     countProp = countTrans.countProp()
