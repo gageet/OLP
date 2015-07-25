@@ -1,8 +1,12 @@
+# -*- coding: utf-8 -*-
 import random
+import sys
 
 
-chars = ['a', 'b', 'c', 'd', 'e', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
-         '0', '1', '2', '3', '4' ,'5', '6', '7', '8', '9']
+chars = ['a', 'b', 'c', 'd', 'e', 'd', 'e', 'f', 'g', 'h',
+         'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r',
+         's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 
 
 def getRandIntGenerator(a, b):
@@ -20,7 +24,7 @@ def getRandFltGenerator(a, b):
 def getRandEltGenerator(elements):
     def genRandElt():
         return random.choice(elements)
-    return genRandElt()
+    return genRandElt
 
 
 def getRandStrGenerator(len_):
@@ -29,17 +33,19 @@ def getRandStrGenerator(len_):
         for i in range(len_):
             str_ += random.choice(chars)
         return str_
-    return genRandStr()
+    return genRandStr
 
 
 def getRandDateGenerator():
     def genRandDate():
         return '2014/02/10'
+    return genRandDate
 
 
 def getRandBoolGenerator():
     def genRandBool():
         return random.choice(['', '1'])
+    return genRandBool
 
 
 def genRandList(n):
@@ -50,7 +56,7 @@ def genRandList(n):
             elt = ''
             for j in range(eltLen):
                 elt += random.choice(chars)
-            if ele not in elts:
+            if elt not in elts:
                 elts.add(elt)
                 break
     return list(elts)
@@ -60,7 +66,7 @@ fieldNames2Generator = {
     # '协议号': getRandIntGenerator(100000000, 800000000),
     '协议修饰符': getRandEltGenerator(genRandList(2)),
     '币种': getRandEltGenerator(genRandList(2)),
-    '值类型代码': getRandEltGenerator(genRandList(2)) ,
+    '值类型代码': getRandEltGenerator(genRandList(2)),
     '账务机构号': getRandEltGenerator(genRandList(2)),
     '一级分行机构号':  getRandEltGenerator(genRandList(2)),
     '零售贷款品种代码': getRandEltGenerator(genRandList(2)),
@@ -130,7 +136,7 @@ fieldNames2Generator = {
     '本月提前还款金额': getRandFltGenerator(1000, 1000000),
     '上次付款日期': getRandDateGenerator(),
     '提前付款标志': getRandBoolGenerator(),
-    '最早欠款日期':getRandDateGenerator(),
+    '最早欠款日期': getRandDateGenerator(),
     '最长一期逾期天数': getRandIntGenerator(10, 20),
     '最近欠款日期': getRandDateGenerator(),
     '最近欠款天数': getRandIntGenerator(10, 20),
@@ -185,10 +191,22 @@ fieldNames2Generator = {
 }
 
 
-def genLoans(protolNums, custNums, months):
-    loans = {}
-    for protolNum, custNum in zip(protolNums, custNums):
-        loan = {}
-        loan['协议号'] = protolNum
-        loan['核心客户号'] = custNum
+def genLoans(nSamples, filename):
+    protolNums = ['%d' % i for i in range(1, nSamples + 1)]
+    custNums = ['%d' % i for i in range(1, nSamples + 1)]
 
+    with open(filename, 'w') as outFile:
+        fieldNames = fieldNames2Generator.keys()
+        outFile.write('\t'.join(['协议号', '核心客户号'] + fieldNames) + '\n')
+        for protolNum, custNum in zip(protolNums, custNums):
+            outFile.write('%s\t%s' % (protolNum, custNum))
+            for fieldName in fieldNames:
+                field = fieldNames2Generator[fieldName]()
+                outFile.write('\t%s' % str(field))
+            outFile.write('\n')
+
+
+if __name__ == '__main__':
+    nSamples = int(sys.argv[1])
+    filename = sys.argv[2]
+    genLoans(nSamples, filename)
