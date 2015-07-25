@@ -3,13 +3,12 @@
 import os
 
 
-baseDir = '/home/lk/Bank/Data'
+baseDir = os.path.dirname(os.path.realpath(__file__))
 loanDir = os.path.join(baseDir, 'Loans')
-transDir = os.path.join(baseDir, 'Transactions')
-prodDir = os.path.join(baseDir, 'Products')
+transDir = os.path.join(baseDir, 'Trans')
+prodDir = os.path.join(baseDir, 'Contacts')
 
-trainMonths = ['2014-2', '2014-3']
-testMonths = ['2014-4', '2014-5']
+months = ['2014-2', '2014-3']
 
 
 fieldName2fieldType = {
