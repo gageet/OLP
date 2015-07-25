@@ -1,11 +1,64 @@
 # -*- coding: utf-8 -*-
 
-countRules = {'notCorpTotalMoney':{'formula':'sum',
+countRules = {'notCorpIncomeTotalMoney':{'formula':'sum',
                                    'title':'折人民币',
-                                   'rules':{'借贷标志':'notCorporation'}
+                                   'rules':{'借贷标志':'notCorporation','客户类型':'customerType'}
                                    },
-              'notCorpTotalCount':{'formula':'count',
+              'notCorpIncomeTotalCount':{'formula':'count',
                                    'title':'折人民币',
-                                   'rules':{'借贷标志':'notCorporation'}
-                                   }
+                                   'rules':{'借贷标志':'notCorporation','客户类型':'customerType'}
+                                   },
+              'notCorpIncomeAvg':{'formula':'average',
+                                   'title':'折人民币',
+                                   'rules':{'借贷标志':'notCorporation','客户类型':'customerType'}
+                                   },
+              'notCorpOutcomeTotalMoney':{'formula':'sum',
+                                   'title':'折人民币',
+                                   'rules':{'借贷标志':'notCorporation','客户类型':'customerType'}
+                                   },
+              'notCorpOutcomeTotalCount':{'formula':'count',
+                                   'title':'折人民币',
+                                   'rules':{'借贷标志':'notCorporation','客户类型':'customerType'}
+                                   },
+              'notCorpOutcomeAvg':{'formula':'average',
+                                   'title':'折人民币',
+                                   'rules':{'借贷标志':'notCorporation','客户类型':'customerType'}
+                                   },
+              'notCorpOurBankRivalIncomeTotalMoney':{'formula':'sum',
+                                                       'title':'折人民币',
+                                                       'rules':{'借贷标志':'notCorporation','客户类型':'customerType','对方是否我行客户':'ifOurBankCustomer'}
+                                                       },
+              'notCorpOurBankRivalIncomeTotalCount':{'formula':'count',
+                                                       'title':'折人民币',
+                                                       'rules':{'借贷标志':'notCorporation','客户类型':'customerType','对方是否我行客户':'ifOurBankCustomer'}
+                                                       },
+              'notCorpOurBankRivalIncomeAvg':{'formula':'average',
+                                                 'title':'折人民币',
+                                                 'rules':{'借贷标志':'notCorporation','客户类型':'customerType','对方是否我行客户':'ifOurBankCustomer'}
+                                                 },
+              'CorpIncomeTotalMoney':{'formula':'sum',
+                                   'title':'折人民币',
+                                   'rules':{'借贷标志':'notCorporation','客户类型':'customerType'}
+                                   },
+              'CorpIncomeTotalCount':{'formula':'count',
+                                   'title':'折人民币',
+                                   'rules':{'借贷标志':'notCorporation','客户类型':'customerType'}
+                                   },
+              'CorpIncomeAvg':{'formula':'average',
+                               'title':'折人民币',
+                               'rules':{'借贷标志':'notCorporation','客户类型':'customerType'}
+                              },
+               'CorpOurBankRivalIncomeTotalMoney':{'formula':'sum',
+                                                       'title':'折人民币',
+                                                       'rules':{'借贷标志':'notCorporation','客户类型':'customerType','对方是否我行客户':'ifOurBankCustomer'}
+                                                       },
+              'CorpOurBankRivalIncomeTotalCount':{'formula':'count',
+                                                       'title':'折人民币',
+                                                       'rules':{'借贷标志':'notCorporation','客户类型':'customerType','对方是否我行客户':'ifOurBankCustomer'}
+                                                       },
+              'CorpOurBankRivalIncomeAvg':{'formula':'average',
+                                                 'title':'折人民币',
+                                                 'rules':{'借贷标志':'notCorporation','客户类型':'customerType','对方是否我行客户':'ifOurBankCustomer'}
+                                                 },
               }
+
