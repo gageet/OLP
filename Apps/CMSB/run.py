@@ -3,6 +3,7 @@
 from OLP.Readers.CMSBReaders import CMSBReader
 #from OLP.Readers.LabelReader import LabelReader
 import config as cf
+import os
 
 
 #reader = CMSBReader(None, cf.months, cf.loanDir, cf.transDir, cf.prodDir, cf.fieldName2fieldType)
@@ -31,17 +32,20 @@ import config as cf
 #reader.read()
 
 reader = CMSBReader(cf.fieldName2fieldType)
-loanFieldName2Index, loans = reader.readLoans('/home/lk/Bank/Data/Loans/2014-2')
+loanFieldName2Index, loans = reader.readLoans(os.path.join(cf.loanDir,'2014-2.txt'))
 for loan in loans.values():
     for name, index in loanFieldName2Index.items():
         print '%s:%s' % (name, str(loan[index])),
     print '\n', '-' * 20
-transFieldName2Index, transs = reader.readTranss('/home/lk/Bank/Data/Transactions/2014-2')
+print os.path.join(cf.transDir,'2014-2.txt')
+
+transFieldName2Index, transs = reader.readTranss(os.path.join(cf.transDir,'2014-2.txt'))
 for trans in transs.values():
     for name, index in transFieldName2Index.items():
         print '%s:%s' % (name, str(trans[index])),
     print '\n', '-' * 20
-prodFieldName2Index, prods = reader.readProds('/home/lk/Bank/Data/Products/2014-2')
+
+prodFieldName2Index, prods = reader.readProds(os.path.join(cf.transDir,'2014-2.txt'))
 for prod in prods.values():
     for name, index in prodFieldName2Index.items():
         print '%s:%s' % (name, str(prod[index])),

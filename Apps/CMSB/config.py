@@ -4,9 +4,9 @@ import os
 
 
 baseDir = os.path.dirname(os.path.realpath(__file__))
-loanDir = os.path.join(baseDir, 'Loans')
-transDir = os.path.join(baseDir, 'Trans')
-prodDir = os.path.join(baseDir, 'Contacts')
+loanDir = os.path.join(baseDir, 'Data\Loans')
+transDir = os.path.join(baseDir, 'Data\Trans')
+prodDir = os.path.join(baseDir, 'Data\Contacts')
 
 months = ['2014-2', '2014-3']
 
