@@ -1,12 +1,27 @@
 # -*- coding: utf-8 -*-
 
+import os
 from OLP.Readers.CMSBReaders import CMSBReader
-#from OLP.Readers.LabelReader import LabelReader
 import config as cf
 
+def readData(cf):
+    reader = CMSBReader(cf.fieldName2fieldType)
+    
+    trnFeatLoanFilenames = [os.path.join(cf.loanDir, month) for month in cf.trnFeatMonths]
+    trnFeatTransFilenames = [os.path.join(cf.transDir, month) for month in cf.trnFeatMonths]
+    trnFeatProdFilenames = [os.path.join(cf.prodDir, month) for month in cf.trnFeatMonths]
+    trnLabelLoanFilenames = [os.path.join(cf.loanDir, month) for month in cf.trnLabelMonths]
+    tstFeatLoanFilenames = [os.path.join(cf.loanDir, month) for month in cf.tstFeatMonths]
+    tstFeatTransFilenames = [os.path.join(cf.transDir, month) for month in cf.tstFeatMonths]
+    tstFeatProdFilenames = [os.path.join(cf.prodDir, month) for month in cf.tstFeatMonths]
+    tstLabelLoanFilenames = [os.path.join(cf.loanDir, month) for month in cf.tstLabelMonths]
+    
+    trnFeatLoans = reader.readLoans(trnFeatLoanFilenames)
+    trnFeatTranss = reader.readTranss(trnFeatTransFilenames)
+    trnFeatProds = reader.readProds(trnFeatProdFilenames)
+    trnLabelLoans = reader.readLoans(trnLabelLoanFilenames)
 
-#reader = CMSBReader(None, cf.months, cf.loanDir, cf.transDir, cf.prodDir, cf.fieldName2fieldType)
-#loans = reader.readLoans(None, cf.loanDir, cf.months)
+
 #
 #labelReader = LabelReader()
 #targets = labelReader.readLabel(loans, '协议号')

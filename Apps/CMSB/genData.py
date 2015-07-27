@@ -280,7 +280,14 @@ transFieldNames2Generator = {
 }
 
 
-def genData(nSamples, loanFilename, transFilename):
+prodFieldNames2Generator = {
+    #  '我行客户号': None,
+    '零售签约产品代码': getRandEnumGenerator('零售产品签约代码'),
+    '签约时间': getRandDateGenerator(),
+}
+
+
+def genData(nSamples, loanFilename, transFilename, prodFilename):
     protolNums = ['%d' % i for i in range(1, nSamples + 1)]
     custNums = ['%d' % i for i in range(1, nSamples + 1)]
 
@@ -305,8 +312,21 @@ def genData(nSamples, loanFilename, transFilename):
                     transFile.write('\t%s' % str(field))
                 transFile.write('\n')
 
+    with open(prodFilename, 'w') as prodFile:
+        fieldNames = prodFieldNames2Generator.keys()
+        prodFile.write('\t'.join(['我行客户号'] + fieldNames) + '\n')
+        for custNum in custNums:
+            for prodNum in range(random.randint(1, 10)):
+                prodFile.write('%s' % (custNum))
+                for fieldName in fieldNames:
+                    field = prodFieldNames2Generator[fieldName]()
+                    prodFile.write('\t%s' % str(field))
+                prodFile.write('\n')
+
+
 if __name__ == '__main__':
     nSamples = int(sys.argv[1])
     loanFilename = sys.argv[2]
     transFilename = sys.argv[3]
-    genData(nSamples, loanFilename, transFilename)
+    prodFilename = sys.argv[4]
+    genData(nSamples, loanFilename, transFilename, prodFilename)
