@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from OLP.Readers.Reader import Reader
-from ReaderTools import UniPrinter
 
 
 class CMSBFieldProcessor(object):
@@ -29,10 +28,6 @@ class CMSBFieldProcessor(object):
             fieldName2IndexOld[fieldName] = len(fieldName2IndexOld)
             if fieldName in self.fieldName2fieldType:  # 保留目标字段
                 fieldName2IndexNew[fieldName] = len(fieldName2IndexNew)
-        print 'indexOld'
-        UniPrinter().pprint(fieldName2IndexOld)
-        print 'indexNew'
-        UniPrinter().pprint(fieldName2IndexNew)
         return fieldName2IndexNew
 
     def convertLoanFields(self, fields):
@@ -63,8 +58,6 @@ class CMSBFieldProcessor(object):
         self.addFields(fields, samples, primFieldName, self.prodFieldName2IndexNew)
 
     def addFields(self, fields, samples, primFieldName, fieldName2Index):
-        print primFieldName
-        UniPrinter().pprint(fieldName2Index)
         primFieldIndex = fieldName2Index[primFieldName]
         primField = fields[primFieldIndex]
 
