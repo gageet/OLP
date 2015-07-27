@@ -23,7 +23,7 @@ class CleanedLoansFilter(Filter):
 				if loan[index][i] != '' and loan[index][i] == '0':
 					del loans[key]
 					break
-		return	loans
+		return	(title2index,loans)
 
 
 class CustCodeFilter(Filter):
