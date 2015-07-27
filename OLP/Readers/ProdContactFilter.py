@@ -40,11 +40,7 @@ class ContactDateFilter():
 
             # 如果只删除客户的部分记录, 则删除这些记录
             if (not len(delProdNo) == len(contactTable[key][0])) and (not len(delProdNo) == 0):
-                print 'OLD'
-                UniPrinter().pprint(contactTable[key])
                 self.deleteRecord(contactTable[key], delProdNo)
-                print 'NEW'
-                UniPrinter().pprint(contactTable[key])
             # 如果删除客户的全部记录, 则标记这个客户在delCustNo列表中，在循环外删除
             elif len(delProdNo) == len(contactTable[key][0]):
                 delCustNo.append(key)
@@ -65,26 +61,3 @@ class ContactDateFilter():
     def deleteCust(self, sourceTable, delCust):
         for key in delCust:
             del sourceTable[key]
-
-
-
-
-if __name__ == '__main__':
-
-    from CMSBReaders import CMSBReader
-    import config
-    from ReaderTools import UniPrinter
-
-    tableObject = CMSBReader(config.fieldName2fieldType)
-    table = tableObject.readProds(['prods.txt',])
-    UniPrinter().pprint(table)
-    tableFiltered = ContactDateFilter('2014/1/19').filter(table)
-    UniPrinter().pprint(tableFiltered)
-
-
-
-
-
-
-
-
