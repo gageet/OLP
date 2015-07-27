@@ -2,8 +2,8 @@
 
 from ReaderTools import TimeTools
 from datetime import datetime
-from CounterConfig import prodContactDate, defaultDate
-from CounterConfig import custNo, prodContactCode, contactAmount
+from CounterConfig import prodContactDateTitle, defaultDate
+from CounterConfig import custNoTitle, prodContactCodeTitle, contactAmountTitle
 
 class ContactDateFilter():
     '''
@@ -28,8 +28,8 @@ class ContactDateFilter():
 
             for index in range(len(self.contactTable[key][0])):
 
-                if not isinstance(self.contactTable[key][self.countTitle2Index[prodContactDate]][index], datetime):
-                    recordValueDate = TimeTools().str2Date(self.contactTable[key][self.countTitle2Index[prodContactDate]][index], '/')
+                if not isinstance(self.contactTable[key][self.countTitle2Index[prodContactDateTitle]][index], datetime):
+                    recordValueDate = TimeTools().str2Date(self.contactTable[key][self.countTitle2Index[prodContactDateTitle]][index], '/')
                 if not isinstance(self.statDate, datetime):
                     statDate = TimeTools().str2Date(self.statDate, '/')
                 # 如果记录中的签约时间大于统计时间，则将此条签约记录标记为将删除记录，加入delProdNo的列表中
@@ -67,16 +67,16 @@ class ProdContactCounter:
         self.countTitle2Index, self.contactTable = ContactDateFilter(contactTableTuple, statDate).filter()
 
     def countProdContact(self):
-        resultTable = []
+        resultTable = {}
         for key in self.contactTable:
             value = self.count(self.contactTable[key])
-            resultTable.append([key,value])
-        resultTitle2Index = {custNo:'0', contactAmount:'1'}
-        return resultTitle2Index, resultTable
+            resultTable[key] = value
+        #resultTitle2Index = {custNoTitle:'0', contactAmountTitle:'1'}
+        return resultTable
 
     def count(self,contactRecords):
         tempList = []
-        record = contactRecords[self.countTitle2Index[prodContactCode]]
+        record = contactRecords[self.countTitle2Index[prodContactCodeTitle]]
         countNum = 0
         for index in record:
             if not index in tempList:

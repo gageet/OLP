@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
-prodContactDate = '签约时间'
-prodContactCode = '零售签约产品代码'
-custNo = '我行客户号'
-contactAmount = '签约数量'
+prodContactDateTitle = '签约时间'
+prodContactCodeTitle = '零售签约产品代码'
+loanNoTitle = '协议号'
+custNoTitle = '我行客户号'
+loanCustNoTitle = '核心客户号'
+contactAmountTitle = '签约数量'
+
 defaultDate = '0001/1/1'
 
 countRules = {'notCorpIncomeTotalMoney':{'formula':'sum',
