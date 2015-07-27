@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+prodContactDate = '签约时间'
+defaultDate = '0001/1/1'
 
 countRules = {'notCorpIncomeTotalMoney':{'formula':'sum',
                                    'title':'折人民币',
