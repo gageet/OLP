@@ -1,6 +1,7 @@
 # coding: utf-8
 
 import CounterConfig
+from ReaderTools import UniPrinter
 
 class TransCounter:
     '''
@@ -31,6 +32,7 @@ class TransCounter:
                 calcResult = self.calcProp(self.tableContent[loanKey], CounterConfig.countRules[propKey])
                 value.append(calcResult)
             self.resultDict[loanKey] = value
+            print 'value',value
         return self.indiTitle2index, self.resultDict
 
     def calcProp(self, loan, prop):
