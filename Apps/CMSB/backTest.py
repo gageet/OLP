@@ -2,11 +2,70 @@
 
 import os
 from OLP.Readers.CMSBReaders import CMSBReader
+from OLP.Readers.LoanFilter import getFilter
+from OLP.Readers.Classifier import getClassifier
+from OLP.Metrics.Metric import getMetric
 import config as cf
 
-def readData(cf):
+
+def filterLoans(filterNames, fieldName2Index, loans):
+    filters = [getFilter(filterName) for filterName in filterNames]
+    for filter_ in filters:
+        fieldName2Index, loans = filter_.filter(fieldName2Index, loans)
+    return loans
+
+
+def genFeats(loanFieldName2Index, featLoans,
+             transFieldName2Index, featTranss,
+             prodFieldName2Index, featProds):
+    pass  # TODO sort by protolNum
+
+
+def genLabels(loanFieldName2Index, featLoans, labelLoans):
+    pass  # TODO sort by protolNum
+
+
+def fit(modelName, modelParam, feats, labels):
+    Xs = [_[2] for _ in feats]
+    ys = [_[2] for _ in labels]
+    clf = getClassifier(modelName, modelParam)
+    clf.fit(Xs, ys)
+    return clf
+
+
+def predict(clf, feats):
+    labels = []
+    for protolNum, custNum, X in feats:
+        y = clf.predict([X])[0]
+        labels.append([protolNum, custNum, y])
+    return labels
+
+
+def genMetrics(metricNames, labels, labelsPred):
+    reports = ''
+    ys = [_[2] for _ in labels]
+    ysPred = [_[2] for _ in labelsPred]
+    metrics = [getMetric(metricName) for metricName in metricNames]
+    for metric in metrics:
+        ret = metric.get(ys, ysPred)
+        reports += metric.format(ret) + '\n'
+    return reports
+
+
+def saveSamples(feats, labels, filename):
+    with open(filename, 'w') as outFile:
+        for feat, label in zip(feats, labels):
+            outFile.write(feat[0])
+            outFile.write('\t' + feat[1])
+            for x in feat[2]:
+                outFile.write('\t%.4f' % x)
+            outFile.write('\t%.4f' % label[2])
+
+
+def backTest():
+    # 读入贷款协议数据，交易流水数据和签约产品数据
     reader = CMSBReader(cf.fieldName2fieldType)
-    
+
     trnFeatLoanFilenames = [os.path.join(cf.loanDir, month) for month in cf.trnFeatMonths]
     trnFeatTransFilenames = [os.path.join(cf.transDir, month) for month in cf.trnFeatMonths]
     trnFeatProdFilenames = [os.path.join(cf.prodDir, month) for month in cf.trnFeatMonths]
@@ -15,49 +74,41 @@ def readData(cf):
     tstFeatTransFilenames = [os.path.join(cf.transDir, month) for month in cf.tstFeatMonths]
     tstFeatProdFilenames = [os.path.join(cf.prodDir, month) for month in cf.tstFeatMonths]
     tstLabelLoanFilenames = [os.path.join(cf.loanDir, month) for month in cf.tstLabelMonths]
-    
-    trnFeatLoans = reader.readLoans(trnFeatLoanFilenames)
-    trnFeatTranss = reader.readTranss(trnFeatTransFilenames)
-    trnFeatProds = reader.readProds(trnFeatProdFilenames)
-    trnLabelLoans = reader.readLoans(trnLabelLoanFilenames)
 
+    loanFieldName2Index, trnFeatLoans = reader.readLoans(trnFeatLoanFilenames)
+    transFieldName2Index, trnFeatTranss = reader.readTranss(trnFeatTransFilenames)
+    prodFieldName2Index, trnFeatProds = reader.readProds(trnFeatProdFilenames)
+    loanFieldName2Index, trnLabelLoans = reader.readLoans(trnLabelLoanFilenames)
+    loanFieldName2Index, tstFeatLoans = reader.readLoans(tstFeatLoanFilenames)
+    transFieldName2Index, tstFeatTranss = reader.readTranss(tstFeatTransFilenames)
+    prodFieldName2Index, tstFeatProds = reader.readProds(tstFeatProdFilenames)
+    loanFieldName2Index, tstLabelLoans = reader.readLoans(tstLabelLoanFilenames)
 
-#
-#labelReader = LabelReader()
-#targets = labelReader.readLabel(loans, '协议号')
-#
-#
-#reader.setTargets(targets)
-#loanFieldName2Index, loans, transFieldName2Index, transs, prodFieldName2Index, prods = reader.read()
-#
-#
-#
-#trans = CMSBTransReader(['2014-2.txt',],'业务标识').read()
-#UniPrinter().pprint(trans)
-#countTrans = CountTrans(trans)
-#countProp = countTrans.countProp()
-#UniPrinter().pprint(countProp)
-#
-#targets = [['1', '1', '1'],
-#           ['2', '2', '0']]
-#months = ['2014-2', '2014-3']
-#
-#
-#reader.read()
+    # 过滤贷款协议数据
+    trnFeatLoans = filterLoans(loanFieldName2Index, trnFeatLoans)
+    tstFeatLoans = filterLoans(loanFieldName2Index, tstFeatLoans)
 
-reader = CMSBReader(cf.fieldName2fieldType)
-loanFieldName2Index, loans = reader.readLoans(['/home/lk/Bank/Data/Loans/2014-2', '/home/lk/Bank/Data/Loans/2014-3'])
-for loan in loans.values():
-    for name, index in loanFieldName2Index.items():
-        print '%s:%s' % (name, str(loan[index])),
-    print '\n', '-' * 20
-transFieldName2Index, transs = reader.readTranss(['/home/lk/Bank/Data/Transactions/2014-2', '/home/lk/Bank/Data/Transactions/2014-3'])
-for trans in transs.values():
-    for name, index in transFieldName2Index.items():
-        print '%s:%s' % (name, str(trans[index])),
-    print '\n', '-' * 20
-prodFieldName2Index, prods = reader.readProds(['/home/lk/Bank/Data/Products/2014-2'])
-for prod in prods.values():
-    for name, index in prodFieldName2Index.items():
-        print '%s:%s' % (name, str(prod[index])),
-    print '\n', '-' * 20
+    # 生成用户特征
+    trnFeats = genFeats(loanFieldName2Index, trnFeatLoans,
+                        transFieldName2Index, trnFeatTranss,
+                        prodFieldName2Index, trnFeatProds)
+    tstFeats = genFeats(loanFieldName2Index, tstFeatLoans,
+                        transFieldName2Index, tstFeatTranss,
+                        prodFieldName2Index, tstFeatProds)
+
+    # 生成用户标签
+    trnLabels = genLabels(loanFieldName2Index, trnFeatLoans, trnLabelLoans)
+    tstLabels = genLabels(loanFieldName2Index, tstFeatLoans, tstLabelLoans)
+
+    # 保存样本
+    saveSamples(trnFeats, trnLabels, cf.trnSampFilename)
+    saveSamples(tstFeats, tstLabels, cf.tstSampFilename)
+
+    # 训练模型并预测
+    clf = getClassifier(cf.modelName, cf.modelParam)
+    fit(clf, trnFeats, trnLabels)
+    tstLabelsPred = predict(clf, tstFeats)
+
+    # 计算评价指标
+    reports = genMetrics(cf.metricNames, tstLabels, tstLabelsPred)
+    print reports

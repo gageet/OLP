@@ -2,16 +2,11 @@
 
 import os
 
-
-baseDir = os.path.dirname(os.path.realpath(__file__))
-loanDir = os.path.join(baseDir, 'Data\Loans')
-transDir = os.path.join(baseDir, 'Data\Trans')
-prodDir = os.path.join(baseDir, 'Data\Contacts')
-
-trnFeatMonths = ['2014-2', '2014-3']
-trnLabelMonths = ['2014-4', '2014-5']
-tstFeatMonths = ['2014-6', '2014-7']
-tstLabelMonths = ['2014-8', '2014-9']
+# 数据
+trnFeatMonths = ['2014/2', '2014/3']
+trnLabelMonths = ['2014/4', '2014/5']
+tstFeatMonths = ['2014/6', '2014/7']
+tstLabelMonths = ['2014/8', '2014/9']
 
 fieldName2fieldType = {
     # 贷款表
@@ -61,3 +56,42 @@ fieldName2fieldType = {
     '零售签约产品代码': str,
     '签约时间': str,
 }
+
+# 过滤
+filterNames = [
+    'OLP.Readers.LoanFilter.CleanedLoanFilter',
+    'OLP.Readers.LoanFilter.CustCodeFilter',
+    'OLP.Readers.LoanFilter.ThisMonthLoanFilter'
+]
+
+# 模型
+modelName = 'OLP.Models.SVM.SVM'
+modelParam = {
+    'C': 1.0,
+    'kernel': 'rbf',
+    'gamma': 0.0,
+    'tol': 0.001,
+    'classWeight': None,
+    'maxIter': -1,
+}
+
+# 指标
+metricNames = [
+    'OLP.Metrics.ClassificationMetrics.Accuracy'
+    'OLP.Metrics.ClassificationMetrics.Precision',
+    'OLP.Metrics.ClassificationMetrics.Recall',
+    'OLP.Metrics.ClassificationMetrics.F1'
+]
+
+# 文件
+baseDir = os.path.dirname(os.path.realpath(__file__))
+dataDir = os.path.join(baseDir, 'Data')
+loanDir = os.path.join(dataDir, 'Loans')  # 存放贷款协议文件
+transDir = os.path.join(dataDir, 'Trans')  # 存放交易流水文件
+prodDir = os.path.join(dataDir, 'Contacts')  # 存放签约产品文件
+sampDir = os.path.join(dataDir, 'Samples')  # 存放用于训练/测试的样本
+metricDir = os.path.join(dataDir, 'Metrics')  # 存放评价指标等结果
+
+trnSampFilename = os.path.join(sampDir, 'trnSamples')
+tstSampFilename = os.path.join(sampDir, 'tstSamples')
+metricFilename = os.path.join(metricDir, 'metric')
