@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from OLP.Readers.ReaderTools import UniPrinter
 from OLP.Readers.Reader import Reader
 
 
@@ -72,6 +73,20 @@ class CMSBFieldProcessor(object):
             for j, field in enumerate(fields):
                 sample[j].append(field)
 
+    def expandSamples(self, samples, primFieldName, fieldName2Index):
+        dimMax = 0
+        for sample in samples.itervalues():
+            for field in sample:
+                dimMax = max(dimMax, len(field))
+        for sample in samples.itervalues():
+            for fieldName, fieldIndex in fieldName2Index.iteritems():
+                field = sample[fieldIndex]
+                if len(field) < dimMax:
+                    type_ = self.fieldName2fieldType[fieldName]
+                    sample[fieldIndex] = [type_()] * (dimMax - len(field))
+                    sample[fieldIndex].extend(field)
+        return samples
+
 
 class CMSBReader(Reader):
 
@@ -85,6 +100,7 @@ class CMSBReader(Reader):
         loans = {}
 
         for i, filename in enumerate(filenames):
+            print filename
             with open(filename) as inFile:
                 # 读取第一行
                 firstLine = inFile.readline()
@@ -97,6 +113,7 @@ class CMSBReader(Reader):
                     fields = self.fieldProcessor.convertLoanFields(fields)
                     self.fieldProcessor.addLoanFields(fields, loans, self.protolNumName)
                 inFile.close()
+        loans = self.fieldProcessor.expandSamples(loans, self.protolNumName, fieldName2Index)  # 扩展字段维数
 
         return fieldName2Index, loans
 
