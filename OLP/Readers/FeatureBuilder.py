@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from CounterConfig import loanCustNoTitle, custNoTitle, loanNoTitle, contactAmountTitle
+from CounterConfig import loanfeatTitle
 
 
 class FeatureBuilder:
@@ -28,7 +29,7 @@ class FeatureBuilder:
         months = range(len(loanRecord[0]))
 
         for loanPropKey in self.LTTitle2index:
-            if loanPropKey not in propList:
+            if loanPropKey not in propList and loanfeatTitle.has_key(loanPropKey):
                 for month in months:
                     record.append(loanRecord[self.LTTitle2index[loanPropKey]][month])
                     propList.append(loanPropKey)
