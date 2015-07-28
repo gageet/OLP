@@ -17,25 +17,25 @@ class LabelReader:
     shouldRepayDate = '本月应还款日期'
     defaultDebtDate = '0001/1/1'
 
-    def __init__(self, loans, loansFiltered):
-        self.table = loans
+    def __init__(self, loans4Labeling, loansFiltered):
+        self.table4Labeling = loans4Labeling
         self.tableFiltered = loansFiltered
 
     def readLabel(self):
         '''
         从贷款表中得到每一行的信誉度，良好或不良。
-        :param table: 已经读取且去重的贷款协议表
+        :param table4Labeling: 已经读取且去重的贷款协议表
         :return: [[协议号，客户号，是否不良]，[协议号，客户号，是否不良]，……]
         '''
-        tableContentDict = self.table[1]
-        self.title2index = self.table[0]
-        loanReputation = []
-        # tableKey was a dic that contains a record(row)
+        tableContentDict = self.table4Labeling[1]
+        self.title2index = self.table4Labeling[0]
+        loanReputations = []
+
         for tableKey in tableContentDict:
-            loanReputationRecord = self.getReputation(tableContentDict[tableKey], tableKey)
-            loanReputation.append(loanReputationRecord)
-        # TODO
-        return loanReputation
+            if tableKey in self.tableFiltered:
+                loanReputationRecord = self.getReputation(tableContentDict[tableKey], tableKey)
+                loanReputations.append(loanReputationRecord)
+        return loanReputations
 
     def getReputation(self, contentDictValue, tableKey):
         '''
