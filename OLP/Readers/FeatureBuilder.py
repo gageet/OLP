@@ -34,9 +34,8 @@ class FeatureBuilder:
                     record.append(loanRecord[self.LTTitle2index[loanPropKey]][month])
                     propList.append(loanPropKey)
                     if exeTime == 0:
-                        for times in months:
-                            self.title2index[loanPropKey + str(times)] = index
-                            index += 1
+                        self.title2index[loanPropKey + str(month)] = index
+                        index += 1
 
         for transPropKey in self.TFTTitle2index:
             if transPropKey not in propList:
