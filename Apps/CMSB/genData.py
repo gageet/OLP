@@ -38,7 +38,7 @@ def getRandStrGenerator(len_):
 
 def getRandDateGenerator():
     def genRandDate():
-        return '2014/02/10'
+        return '2014/%d/%d' % (random.randint(1, 4), random.randint(1, 28))
     return genRandDate
 
 
@@ -70,6 +70,7 @@ def genRandList(n):
 
 loanFieldNames2Generator = {
     # '协议号': getRandIntGenerator(100000000, 800000000),
+    '统计日期': getRandDateGenerator(),
     '协议修饰符': getRandEnumGenerator('协议修饰符'),
     '币种': getRandEnumGenerator('币种'),
     '值类型代码': getRandEnumGenerator('值类型代码'),
