@@ -23,27 +23,27 @@ def filterLoans(filterNames, fieldName2Index, loans):
 def genFeats(loanFieldName2Index, loans,
              transFieldName2Index, transs,
              prodFieldName2Index, prods):
-    transFieldName2Index, transs = TransCounter((transFieldName2Index, transs)).countTrans()
-    prodFieldName2Index, prods = ProdContactCounter((prodFieldName2Index, prods)).countProdContact()
+    transFieldName2Index, transs = TransCounter((transFieldName2Index, transs)).countProp()
+    prods = ProdContactCounter((prodFieldName2Index, prods), '2014/3/31').countProdContact()
     builder = FeatureBuilder((loanFieldName2Index, loans),
                              (transFieldName2Index, transs),
-                             (prodFieldName2Index, prods))
+                             prods)
     fieldName2Index, feats = builder.buildFeature()
     feats.sort(key=lambda item: item[0])
     return fieldName2Index, feats
 
 
 def genLabels(loanFieldName2Index, featLoans, labelLoans):
-    reader = LabelReader(labelLoans, featLoans)
+    reader = LabelReader((loanFieldName2Index, labelLoans),
+                         featLoans)
     labels = reader.readLabel()
     labels.sort(key=lambda item: item[0])
     return labels
 
 
-def fitModel(modelName, modelParam, feats, labels):
+def fitModel(clf, feats, labels):
     Xs = [_[2] for _ in feats]
     ys = [_[2] for _ in labels]
-    clf = getClassifier(modelName, modelParam)
     clf.fit(Xs, ys)
     return clf
 
@@ -60,6 +60,8 @@ def genMetrics(metricNames, labels, labelsPred):
     reports = ''
     ys = [_[2] for _ in labels]
     ysPred = [_[2] for _ in labelsPred]
+    print 'ys', ys
+    print 'ysPred', ysPred
     metrics = [getMetric(metricName) for metricName in metricNames]
     for metric in metrics:
         ret = metric.get(ys, ysPred)
@@ -67,14 +69,20 @@ def genMetrics(metricNames, labels, labelsPred):
     return reports
 
 
-def saveSamples(feats, labels, filename):
+def saveSamples(fieldName2Index, feats, labels, filename):
+    items = fieldName2Index.items()
+    items.sort(key=lambda item: item[1])
+
     with open(filename, 'w') as outFile:
+        outFile.write('\t'.join(['是否逾期', '协议号', '客户号'] + [item[0] for item in items]))
+        outFile.write('\n')
         for feat, label in zip(feats, labels):
-            outFile.write(feat[0])
-            outFile.write('\t' + feat[1])
-            for x in feat[2]:
-                outFile.write('\t%.4f' % x)
-            outFile.write('\t%.4f' % label[2])
+            outFile.write('%d' % label[2])
+            outFile.write('\t%s' % feat[0])
+            outFile.write('\t%s' % feat[1])
+            for fieldName, index in items:
+                outFile.write('\t%.4f' % feat[2][index])
+            outFile.write('\n')
 
 
 def backTest():
@@ -100,8 +108,8 @@ def backTest():
     loanFieldName2Index, tstLabelLoans = reader.readLoans(tstLabelLoanFilenames)
 
     # 过滤贷款协议数据
-    trnFeatLoans = filterLoans(loanFieldName2Index, trnFeatLoans)
-    tstFeatLoans = filterLoans(loanFieldName2Index, tstFeatLoans)
+    trnFeatLoans = filterLoans(cf.filterNames, loanFieldName2Index, trnFeatLoans)
+    tstFeatLoans = filterLoans(cf.filterNames, loanFieldName2Index, tstFeatLoans)
 
     # 生成用户特征
     fieldName2Index, trnFeats = genFeats(loanFieldName2Index, trnFeatLoans,
@@ -114,11 +122,17 @@ def backTest():
     # 生成用户标签
     trnLabels = genLabels(loanFieldName2Index, trnFeatLoans, trnLabelLoans)
     tstLabels = genLabels(loanFieldName2Index, tstFeatLoans, tstLabelLoans)
+    print 'trnLabels'
+    UniPrinter().pprint(trnLabels)
+    print 'tstLabels'
+    UniPrinter().pprint(tstLabels)
 
     # 训练模型并预测
     clf = getClassifier(cf.modelName, cf.modelParam)
     fitModel(clf, trnFeats, trnLabels)
     tstLabelsPred = predictLabels(clf, tstFeats)
+    print 'tstLabelsPred'
+    UniPrinter().pprint(tstLabelsPred)
 
     # 保存样本
     saveSamples(fieldName2Index, trnFeats, trnLabels, cf.trnSampFilename)
@@ -175,8 +189,10 @@ def predict():
     saveSamples(tstFeats, tstLabelsPred, cf.tstSampFilename)
 
 
-reader = CMSBReader(cf.fieldName2fieldType)
+if __name__ == '__main__':
+    backTest()
 
-featLoanFilenames = [os.path.join(cf.loanDir, '2014-2'), os.path.join(cf.loanDir, '2014-3')]
-fieldName2Index, loans = reader.readLoans(featLoanFilenames)
-UniPrinter().pprint(loans)
+    #reader = CMSBReader(cf.fieldName2fieldType)
+    #featLoanFilenames = [os.path.join(cf.loanDir, '2014-2'), os.path.join(cf.loanDir, '2014-3')]
+    #fieldName2Index, loans = reader.readLoans(featLoanFilenames)
+    #UniPrinter().pprint(loans)

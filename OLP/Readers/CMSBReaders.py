@@ -25,6 +25,8 @@ class CMSBFieldProcessor(object):
         return self.buildIndex(fieldNames, self.prodFieldName2IndexOld, self.prodFieldName2IndexNew)
 
     def buildIndex(self, fieldNames, fieldName2IndexOld, fieldName2IndexNew):
+        fieldName2IndexOld.clear()
+        fieldName2IndexNew.clear()
         for fieldName in fieldNames:
             fieldName2IndexOld[fieldName] = len(fieldName2IndexOld)
             if fieldName in self.fieldName2fieldType:  # 保留目标字段
@@ -46,6 +48,9 @@ class CMSBFieldProcessor(object):
             type_ = self.fieldName2fieldType[fieldName]
             indexOld = fieldName2IndexOld[fieldName]
             indexNew = fieldName2IndexNew[fieldName]
+            #print len(fieldName2IndexNew), len(fieldName2IndexOld)
+            #print fieldName
+            #print len(fieldsCnvtd), indexNew, len(fields), indexOld
             fieldsCnvtd[indexNew] = type_(fields[indexOld])
         return fieldsCnvtd
 
@@ -100,7 +105,6 @@ class CMSBReader(Reader):
         loans = {}
 
         for i, filename in enumerate(filenames):
-            print filename
             with open(filename) as inFile:
                 # 读取第一行
                 firstLine = inFile.readline()

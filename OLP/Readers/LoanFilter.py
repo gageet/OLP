@@ -21,7 +21,7 @@ class CleanedLoanFilter(Filter):
         for key, loan in loans.items():
             index = title2index[self.cleanedFlag]
             for i in range(len(loan[index])):
-                if loan[index][i] != '' and loan[index][i] == '0':
+                if loan[index][i] == True:
                     del loans[key]
                     break
         return title2index, loans
@@ -41,7 +41,7 @@ class CustCodeFilter(Filter):
         for key, loan in loans.items():
             index = title2index[self.fiveClassificationCode]
             for i in range(len(loan[index])):
-                if loan[index][i] != '' and loan[index][i] != '201':
+                if loan[index][i] != '五级分类代码3':
                     del loans[key]
                     break
         return title2index, loans
