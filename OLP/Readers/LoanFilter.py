@@ -24,7 +24,7 @@ class CleanedLoanFilter(Filter):
                 if loan[index][i] != '' and loan[index][i] == '0':
                     del loans[key]
                     break
-        return (title2index, loans)
+        return title2index, loans
 
 
 class CustCodeFilter(Filter):

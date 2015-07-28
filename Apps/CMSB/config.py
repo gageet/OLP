@@ -61,7 +61,7 @@ fieldName2fieldType = {
 filterNames = [
     'OLP.Readers.LoanFilter.CleanedLoanFilter',
     'OLP.Readers.LoanFilter.CustCodeFilter',
-    'OLP.Readers.LoanFilter.ThisMonthLoanFilter'
+    'OLP.Readers.LoanFilter.ThisMonthLoanFilter',
 ]
 
 # 模型
@@ -77,14 +77,14 @@ modelParam = {
 
 # 指标
 metricNames = [
-    'OLP.Metrics.ClassificationMetrics.Accuracy'
+    'OLP.Metrics.ClassificationMetrics.Accuracy',
     'OLP.Metrics.ClassificationMetrics.Precision',
     'OLP.Metrics.ClassificationMetrics.Recall',
-    'OLP.Metrics.ClassificationMetrics.F1'
+    'OLP.Metrics.ClassificationMetrics.F1',
 ]
 
 # 文件
-baseDir = os.path.dirname(os.path.realpath(__file__))
+baseDir = os.path.dirname('/home/lk/Bank/')
 dataDir = os.path.join(baseDir, 'Data')
 loanDir = os.path.join(dataDir, 'Loans')  # 存放贷款协议文件
 transDir = os.path.join(dataDir, 'Trans')  # 存放交易流水文件
@@ -94,4 +94,5 @@ metricDir = os.path.join(dataDir, 'Metrics')  # 存放评价指标等结果
 
 trnSampFilename = os.path.join(sampDir, 'trnSamples')
 tstSampFilename = os.path.join(sampDir, 'tstSamples')
+predSampFilename = os.path.join(sampDir, 'predSamples')
 metricFilename = os.path.join(metricDir, 'metric')
