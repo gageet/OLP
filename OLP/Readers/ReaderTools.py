@@ -11,6 +11,12 @@ class TimeTools:
         pass
 
     def str2Date(self, str, separator):
+        '''
+        将字符串转换为日期
+        :param str: 日期的str格式
+        :param separator: 日期分隔符
+        :return: 日期的datetime格式
+        '''
         return datetime.strptime(str, "%Y"+separator+"%m"+separator+"%d")
 
 

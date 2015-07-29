@@ -5,7 +5,7 @@ from ReaderTools import UniPrinter
 
 class TransCounter:
     '''
-    将输入的交易信息表进行统计，得到每个key想要得到的间接属性，计算规则写在CountConfig.py配置文件中
+    将输入的交易信息表进行统计，得到每个key想要得到的间接属性，生成交易信息特征表。计算规则写在CountConfig.py配置文件中
     '''
 
     def __init__(self,table):
@@ -69,13 +69,3 @@ class TransCounter:
             else:
                 return sum/count
         return None
-
-if __name__ == '__main__':
-    from CMSBReaders import CMSBReader
-    from ReaderTools import UniPrinter
-    tran = CMSBReader()
-    trans = CMSBTransReader(['trans.txt',],'业务标识').read()
-    UniPrinter().pprint(trans)
-    countTrans = TransCounter(trans)
-    countProp = countTrans.countProp()
-    UniPrinter().pprint(countProp)

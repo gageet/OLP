@@ -5,6 +5,46 @@ from datetime import datetime
 from CounterConfig import prodContactDateTitle, defaultDate
 from CounterConfig import custNoTitle, prodContactCodeTitle, contactAmountTitle
 
+class ProdContactCounter:
+    '''
+    根据产品签约表，生成产品签约特征表。调用countProdContact即可
+    '''
+    def __init__(self, contactTableTuple, statDate):
+        '''
+        根据产品签约表，生成产品签约特征表
+        :param contactTableTuple: 格式(特征索引{}, 产品签约表{})
+        :param statDate: 统计日期
+        '''
+        self.countTitle2Index, self.contactTable = ContactDateFilter(contactTableTuple, statDate).filter()
+
+    def countProdContact(self):
+        '''
+        生成产品签约特征表。格式 产品签约特征表{客户号：签约数量}
+        '''
+        resultTable = {}
+        for key in self.contactTable:
+            value = self.count(self.contactTable[key])
+            resultTable[key] = value
+        #resultTitle2Index = {custNoTitle:'0', contactAmountTitle:'1'}
+        return resultTable
+
+    def count(self,contactRecords):
+        '''
+        计算某个客户的特征（签约数量）
+        :param contactRecords: 该客户的所有签约内容
+        :return: 签约数量
+        '''
+        tempList = []
+        record = contactRecords[self.countTitle2Index[prodContactCodeTitle]]
+        countNum = 0
+        for index in record:
+            # 过滤重复签约
+            if not index in tempList:
+                tempList.append(index)
+                countNum += 1
+
+        return countNum
+
 class ContactDateFilter():
     '''
     客户产品签约表的过滤，目前只过滤签约时间大于统计时间的
@@ -59,28 +99,3 @@ class ContactDateFilter():
     def deleteCust(self, sourceTable, delCust):
         for key in delCust:
             del sourceTable[key]
-
-
-class ProdContactCounter:
-
-    def __init__(self, contactTableTuple, statDate):
-        self.countTitle2Index, self.contactTable = ContactDateFilter(contactTableTuple, statDate).filter()
-
-    def countProdContact(self):
-        resultTable = {}
-        for key in self.contactTable:
-            value = self.count(self.contactTable[key])
-            resultTable[key] = value
-        #resultTitle2Index = {custNoTitle:'0', contactAmountTitle:'1'}
-        return resultTable
-
-    def count(self,contactRecords):
-        tempList = []
-        record = contactRecords[self.countTitle2Index[prodContactCodeTitle]]
-        countNum = 0
-        for index in record:
-            if not index in tempList:
-                tempList.append(index)
-                countNum += 1
-
-        return countNum
