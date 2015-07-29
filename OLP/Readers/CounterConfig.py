@@ -1,13 +1,33 @@
 # -*- coding: utf-8 -*-
+
+'''
+配置文件
+'''
+
+# 用户产品签约表
+# title
 prodContactDateTitle = '签约时间'
 prodContactCodeTitle = '零售签约产品代码'
-loanNoTitle = '协议号'
-custNoTitle = '我行客户号'
-loanCustNoTitle = '核心客户号'
+# 签约表生成的feature（签约数量）的 title
 contactAmountTitle = '签约数量'
 
+# 用户产品签约表、用户交易流水表中的客户号title
+custNoTitle = '我行客户号'
+
+# 贷款表
+# 客户号title
+loanCustNoTitle = '核心客户号'
+# 协议号title
+loanNoTitle = '协议号'
+
+debtDate = '最近欠款日期'
+statDate = '统计日期'
+lastRepayDate = '上次付款日期'
+shouldRepayDate = '本月应还款日期'
+# 默认时间，可能会在prodContactCounter统计时间用到
 defaultDate = '0001/1/1'
 
+# 提取feature时，提取贷款表中下列title的特征
 loanfeatTitle = {
     '核心客户号': str,
     '协议号': str,
@@ -38,6 +58,13 @@ loanfeatTitle = {
     '结清标志': bool,
     '五级分类代码': str
 }
+
+# 统计交易流水表中的下列属性，作为该表特征
+# 格式：{属性名：{
+# 'formula':'sum/count/average', # 统计公式：求和/统计次数/平均值
+# 'title':'折人民币',  # 统计哪一项
+# 'rules':{title1: value1,title2: value2 # 统计的筛选条件
+# }}
 countRules = {'notCorpIncomeTotalMoney':{'formula':'sum',
                                    'title':'折人民币',
                                    'rules':{'借贷标志':True,'客户类型':'客户类型2'}

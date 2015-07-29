@@ -1,23 +1,29 @@
 # -*- coding: utf-8 -*-
 
 from ReaderTools import TimeTools
+import CounterConfig
 
 
 class LabelReader:
     """
-    贷款表中的标签读取器
+    贷款表中的标签读取器。调用readLabel即可
     """
 
     # 注意！！！
-    # 下面的类变量需要从配置文件中读取
-    custNo = '核心客户号'
-    debtDate = '最近欠款日期'
-    statDate = '统计日期'
-    lastRepayDate = '上次付款日期'
-    shouldRepayDate = '本月应还款日期'
-    defaultDebtDate = '0001/1/1'
+    # 下面的类变量从配置文件中读取
+    custNo = CounterConfig.loanCustNoTitle
+    debtDate = CounterConfig.debtDate
+    statDate = CounterConfig.statDate
+    lastRepayDate = CounterConfig.lastRepayDate
+    shouldRepayDate = CounterConfig.shouldRepayDate
+    defaultDebtDate = CounterConfig.defaultDate
 
     def __init__(self, loans4Labeling, loansFiltered):
+        '''
+        :param loans4Labeling: 需要打标签的贷款表，格式(特征索引{}, 贷款表{})
+        :param loansFiltered: 用以过滤哪些需要进行打标签贷款表，格式(特征索引{}, 贷款表{})
+        :return:
+        '''
         self.table4Labeling = loans4Labeling
         self.tableFiltered = loansFiltered
 
@@ -39,7 +45,7 @@ class LabelReader:
 
     def getReputation(self, contentDictValue, tableKey):
         '''
-        得到该条记录的信誉度，
+        得到该条记录的信誉度。
         :param contentDictValue:
         :param tableKey:
         :return: [协议号，客户号，是否不良]
@@ -48,28 +54,28 @@ class LabelReader:
 
     def calculateReputation(self, contentDictValue):
         '''
-        该条记录是否是不良贷款，True代表是不良贷款，False代表不是
+        该条记录是否是不良贷款，1代表是不良贷款，0代表不是
         :param contentDictValue:
-        :return: True or False.
+        :return: 1 or 0.
         '''
         return self.rule1(contentDictValue)
 
     def rule1(self, contentDictValue):
         '''
-        欠款月份是否等于统计月份，如果是，则返回true。根据每个贷款记录有多少个月份的数据，循环月份数量的次数
+        欠款月份是否等于统计月份，如果是，则返回1。根据每个贷款记录有多少个月份的数据，循环月份数量的次数
         :param contentDictValue:
-        :return: True or False.
+        :return: 1 or 0.
         '''
         for listSize in range(len(contentDictValue[1])):
             debtDate = TimeTools().str2Date(contentDictValue[self.title2index[self.debtDate]][listSize], "/")
             statDate = TimeTools().str2Date(contentDictValue[self.title2index[self.statDate]][listSize], "/")
             if debtDate.year == statDate.year and debtDate.month == statDate.month:
-                return True
+                return 1
         return self.rule2(contentDictValue)
 
     def rule2(self, contentDictValue):
         '''
-        最近欠款日期为默认值（贷款未结清），且未提前还款则返回true。根据每个贷款记录有多少个月份的数据，循环月份数量的次数
+        最近欠款日期为默认值（贷款未结清），且未提前还款则返回1。根据每个贷款记录有多少个月份的数据，循环月份数量的次数
         :param contentDictValue:
         :return: True or False.
         '''
@@ -77,16 +83,5 @@ class LabelReader:
             lastRepayDate = TimeTools().str2Date(contentDictValue[self.title2index[self.lastRepayDate]][listSize], "/")
             shouldRepayDate = TimeTools().str2Date(contentDictValue[self.title2index[self.shouldRepayDate]][listSize], "/")
             if lastRepayDate > shouldRepayDate and contentDictValue[self.title2index[self.debtDate]][listSize] == self.defaultDebtDate:
-                return True
-        return False
-
-if __name__ == '__main__':
-    from CMSBReaders import CMSBLoanReader
-    from ReaderTools import UniPrinter
-    import os
-    loan = CMSBLoanReader([os.path.join(os.path.dirname(os.path.realpath(__file__)),'loanTablen1.txt'), os.path.join(os.path.dirname(os.path.realpath(__file__)),'loanTablen2.txt')], 'ContactNo')
-    loanTable = loan.read()
-    UniPrinter().pprint(loanTable)
-    labelFilter = LabelReader().readLabel(loanTable,'ContactNo')
-    UniPrinter().pprint(labelFilter)
-
+                return 1
+        return 0
