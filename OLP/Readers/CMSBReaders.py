@@ -248,6 +248,7 @@ class CMSBReader(object):
     def __init__(self, fieldName2fieldType):
         self.fieldProcessor = CMSBFieldProcessor(fieldName2fieldType)
         self.protolNumName = '协议号'
+        self.loanCustNumName = '核心客户号'
         self.custNumName = '我行客户号'
 
     def readLoans(self, filenames):
@@ -260,9 +261,11 @@ class CMSBReader(object):
         Returns:
             dict: 字段索引
             dict: 表数据
+            dict: 客户号对应的协议号，格式为{客户号1: [协议号11, 协议号12, ...], 客户号2: [协议号21, 协议号22, ...], ...}
         '''
         fieldName2Index = {}
         loans = {}
+        custNum2ProtolNum = {}
 
         for i, filename in enumerate(filenames):
             with open(filename) as inFile:
@@ -279,7 +282,15 @@ class CMSBReader(object):
                 inFile.close()
         loans = self.fieldProcessor.expandSamples(loans, self.protolNumName, fieldName2Index)  # 扩展字段维数
 
-        return fieldName2Index, loans
+        for protolNum in loans:
+            custNumIndex = fieldName2Index[self.loanCustNumName]
+            custNum = loans[protolNum][custNumIndex][0]
+            if custNum not in custNum2ProtolNum:
+                custNum2ProtolNum[custNum] = [protolNum]
+            else:
+                custNum2ProtolNum[custNum].append(protolNum)
+
+        return fieldName2Index, loans, custNum2ProtolNum
 
     def readTranss(self, filenames):
         '''
