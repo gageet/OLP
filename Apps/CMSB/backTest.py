@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import numpy as np
 from OLP.Readers.ReaderTools import UniPrinter
 from OLP.Readers.CMSBReaders import CMSBReader
 from OLP.Readers.LoanFilter import getFilter
@@ -47,10 +48,10 @@ def genFeats(loanFieldName2Index, loans,
 
     Returns:
         dict: 特征字段索引
-        list: 贷款协议号，客户号和特征值，格式为:
+        list: 客户号和特征值，格式为:
               [
-                  [贷款协议号1, 客户号1, [特征值11, 特征值12, ...]],
-                  [贷款协议号2, 客户号2, [特征值21, 特征值22, ...]],
+                  [客户号1, [特征值11, 特征值12, ...]],
+                  [客户号2, [特征值21, 特征值22, ...]],
                   ...
               ]
     '''
@@ -74,18 +75,70 @@ def genLabels(loanFieldName2Index, featLoans, labelLoans):
         labelLoans (dict): 用于生成标签的贷款协议表数据
 
     Returns:
-        list: 贷款协议号，客户号和类别标签，格式为:
+        list: 客户号和类别标签，格式为:
               [
-               [贷款协议号1, 客户号1, 类别标签1],
-               [贷款协议号2, 客户号2, 类别标签2],
+               [客户号1, 类别标签1],
+               [客户号2, 类别标签2],
                ...
               ]
     '''
-    reader = LabelReader((loanFieldName2Index, labelLoans),
-                         featLoans)
+    reader = LabelReader((loanFieldName2Index, labelLoans), featLoans)
     labels = reader.readLabel()
     labels.sort(key=lambda item: item[0])
     return labels
+
+
+def genFeatImportances(fieldName2Index, feats, labels):
+    '''
+    计算特征重要性
+
+    Args:
+        fieldName2Index (dict): 字段索引
+        feats (list): 客户号和特征值，格式为:
+                      [
+                          [客户号1, [特征值11, 特征值12, ...]],
+                          [客户号2, [特征值21, 特征值22, ...]],
+                          ...
+                      ]
+        labels (list): 客户号和类别标签，格式为:
+                       [
+                           [客户号1, 类别标签1],
+                           [客户号2, 类别标签2],
+                           ...
+                       ]
+
+    Returns:
+        dict: 特征重要性，格式为{特征1: 重要性1, 特征2: 重要性2, ...}
+    '''
+    modelName = 'OLP.Models.Ensemble.RandomForestClassifier'
+    modelParam = {'nEstimators': 100}
+    clf = getClassifier(modelName, modelParam)
+    Xs = [_[1] for _ in feats]
+    ys = [_[1] for _ in labels]
+    clf.fit(Xs, ys)
+
+    importrances = clf.getFeatImportances()
+    fieldName2Importance = {}
+    for fieldName, index in fieldName2Index.iteritems():
+        fieldName2Importance[fieldName] = importrances[index]
+
+    return fieldName2Importance
+
+
+def statFeats(feats, labels):
+    '''
+    计算正常客户的特征均值与标准差
+    '''
+    avgFeats = []
+    stdFeats = []
+    for i in range(len(feats[0][1])):  # 遍历所有特征
+        xs = [feats[j][1][i] for j in range(len(feats)) if labels[j][1] == 0]  # 所有正常用户的第i个特征
+        mean = np.mean(xs)
+        std = np.std(xs)
+        avgFeats.append(mean)
+        stdFeats.append(std)
+
+    return avgFeats, stdFeats
 
 
 def fitModel(clf, feats, labels):
@@ -94,24 +147,24 @@ def fitModel(clf, feats, labels):
 
     Args:
         clf (Classifier): 待训练的分类器
-        feats (list): 贷款协议号，客户号和特征值，格式为:
+        feats (list): 客户号和特征值，格式为:
                       [
-                          [贷款协议号1, 客户号1, [特征值11, 特征值12, ...]],
-                          [贷款协议号2, 客户号2, [特征值21, 特征值22, ...]],
+                          [客户号1, [特征值11, 特征值12, ...]],
+                          [客户号2, [特征值21, 特征值22, ...]],
                           ...
                       ]
-        labels (list): 贷款协议号，客户号和类别标签，格式为:
+        labels (list): 客户号和类别标签，格式为:
                        [
-                           [贷款协议号1, 客户号1, 类别标签1],
-                           [贷款协议号2, 客户号2, 类别标签2],
+                           [客户号1, 类别标签1],
+                           [客户号2, 类别标签2],
                            ...
                        ]
 
     Returns:
         Classifier: 训练后的分类器
     '''
-    Xs = [_[2] for _ in feats]
-    ys = [_[2] for _ in labels]
+    Xs = [_[1] for _ in feats]
+    ys = [_[1] for _ in labels]
     clf.fit(Xs, ys)
     return clf
 
@@ -122,25 +175,25 @@ def predictLabels(clf, feats):
 
     Args:
         clf (Classifier): 训练后的分类器
-        feats (list): 贷款协议号，客户号和特征值，格式为:
+        feats (list): 客户号和特征值，格式为:
                       [
-                          [贷款协议号1, 客户号1, [特征值11, 特征值12, ...]],
-                          [贷款协议号2, 客户号2, [特征值21, 特征值22, ...]],
+                          [客户号1, [特征值11, 特征值12, ...]],
+                          [客户号2, [特征值21, 特征值22, ...]],
                           ...
                       ]
 
     Returns:
-        list: 贷款协议号，客户号和类别标签，格式为:
+        list: 客户号和类别标签，格式为:
               [
-                  [贷款协议号1, 客户号1, 类别标签1],
-                  [贷款协议号2, 客户号2, 类别标签2],
+                  [客户号1, 类别标签1],
+                  [客户号2, 类别标签2],
                   ...
               ]
     '''
     labels = []
-    for protolNum, custNum, X in feats:
+    for custNum, X in feats:
         y = clf.predict([X])[0]
-        labels.append([protolNum, custNum, y])
+        labels.append([custNum, y])
     return labels
 
 
@@ -150,16 +203,16 @@ def genReport(metricNames, labels, labelsPred):
 
     Args:
         metricNames (list): 指标名称列表
-        labels (list): 贷款协议号，客户号和类别标签，格式为:
+        labels (list): 客户号和类别标签，格式为:
                        [
-                           [贷款协议号1, 客户号1, 类别标签1],
-                           [贷款协议号2, 客户号2, 类别标签2],
+                           [客户号1, 类别标签1],
+                           [客户号2, 类别标签2],
                            ...
                        ]
-        labelsPred (list): 贷款协议号，客户号和类别标签，格式为:
+        labelsPred (list): 客户号和类别标签，格式为:
                            [
-                               [贷款协议号1, 客户号1, 类别标签1],
-                               [贷款协议号2, 客户号2, 类别标签2],
+                               [客户号1, 类别标签1],
+                               [客户号2, 类别标签2],
                                ...
                            ]
 
@@ -167,10 +220,8 @@ def genReport(metricNames, labels, labelsPred):
         str: 模型评估报告
     '''
     reports = ''
-    ys = [_[2] for _ in labels]
-    ysPred = [_[2] for _ in labelsPred]
-    print 'ys', ys
-    print 'ysPred', ysPred
+    ys = [_[1] for _ in labels]
+    ysPred = [_[1] for _ in labelsPred]
     metrics = [getMetric(metricName) for metricName in metricNames]
     for metric in metrics:
         ret = metric.get(ys, ysPred)
@@ -178,22 +229,22 @@ def genReport(metricNames, labels, labelsPred):
     return reports
 
 
-def saveSamples(fieldName2Index, feats, labels, filename):
+def saveSamples(fieldName2Index, custNum2ProtolNums, feats, labels, filename):
     '''
     保存样本
 
     Args:
         fieldName2Index (dict): 待训练的分类器
-        feats (list): 贷款协议号，客户号和特征值，格式为:
+        feats (list): 客户号和特征值，格式为:
                       [
-                          [贷款协议号1, 客户号1, [特征值11, 特征值12, ...]],
-                          [贷款协议号2, 客户号2, [特征值21, 特征值22, ...]],
+                          [客户号1, [特征值11, 特征值12, ...]],
+                          [客户号2, [特征值21, 特征值22, ...]],
                           ...
                       ]
-        labels (list): 贷款协议号，客户号和类别标签，格式为:
+        labels (list): 客户号和类别标签，格式为:
                        [
-                           [贷款协议号1, 客户号1, 类别标签1],
-                           [贷款协议号2, 客户号2, 类别标签2],
+                           [客户号1, 类别标签1],
+                           [客户号2, 类别标签2],
                            ...
                        ]
         filename (str): 文件名
@@ -203,14 +254,18 @@ def saveSamples(fieldName2Index, feats, labels, filename):
     items.sort(key=lambda item: item[1])
 
     with open(filename, 'w') as outFile:
-        outFile.write('\t'.join(['是否逾期', '协议号', '客户号'] + [item[0] for item in items]))
+        outFile.write('\t'.join(['是否逾期', '客户号', '协议号'] + [item[0] for item in items]))
         outFile.write('\n')
         for feat, label in zip(feats, labels):
-            outFile.write('%d' % label[2])
-            outFile.write('\t%s' % feat[0])
-            outFile.write('\t%s' % feat[1])
+            custNum = label[0]
+            protolNums = custNum2ProtolNums[custNum]
+            X = feat[1]
+            y = label[1]
+            outFile.write('%d' % y)
+            outFile.write('\t%s' % custNum)
+            outFile.write('\t%s' % ','.join(protolNums))
             for fieldName, index in items:
-                outFile.write('\t%.4f' % feat[2][index])
+                outFile.write('\t%.4f' % X[index])
             outFile.write('\n')
 
 
@@ -230,19 +285,20 @@ def backTest():
     tstFeatProdFilenames = [os.path.join(cf.prodDir, month) for month in cf.tstFeatMonths]
     tstLabelLoanFilenames = [os.path.join(cf.loanDir, month) for month in cf.tstLabelMonths]
 
-    loanFieldName2Index, trnFeatLoans = reader.readLoans(trnFeatLoanFilenames)
+    loanFieldName2Index, trnFeatLoans, trnFeatCustNum2ProtolNums = reader.readLoans(trnFeatLoanFilenames)
     transFieldName2Index, trnFeatTranss = reader.readTranss(trnFeatTransFilenames)
     prodFieldName2Index, trnFeatProds = reader.readProds(trnFeatProdFilenames)
-    loanFieldName2Index, trnLabelLoans = reader.readLoans(trnLabelLoanFilenames)
-    loanFieldName2Index, tstFeatLoans = reader.readLoans(tstFeatLoanFilenames)
+    loanFieldName2Index, trnLabelLoans, trnLabelCustNum2ProtolNums = reader.readLoans(trnLabelLoanFilenames)
+    loanFieldName2Index, tstFeatLoans, tstFeatCustNum2ProtolNums = reader.readLoans(tstFeatLoanFilenames)
     transFieldName2Index, tstFeatTranss = reader.readTranss(tstFeatTransFilenames)
     prodFieldName2Index, tstFeatProds = reader.readProds(tstFeatProdFilenames)
-    loanFieldName2Index, tstLabelLoans = reader.readLoans(tstLabelLoanFilenames)
+    loanFieldName2Index, tstLabelLoans, tstLabelCustNum2ProtolNums = reader.readLoans(tstLabelLoanFilenames)
 
     # 过滤贷款协议数据
     trnFeatLoans = filterLoans(cf.filterNames, loanFieldName2Index, trnFeatLoans)
     tstFeatLoans = filterLoans(cf.filterNames, loanFieldName2Index, tstFeatLoans)
 
+    # ----------------------------------------------------------------------
     # 生成用户特征
     fieldName2Index, trnFeats = genFeats(loanFieldName2Index, trnFeatLoans,
                                          transFieldName2Index, trnFeatTranss,
@@ -254,10 +310,17 @@ def backTest():
     # 生成用户标签
     trnLabels = genLabels(loanFieldName2Index, trnFeatLoans, trnLabelLoans)
     tstLabels = genLabels(loanFieldName2Index, tstFeatLoans, tstLabelLoans)
+
     print 'trnLabels'
     UniPrinter().pprint(trnLabels)
     print 'tstLabels'
     UniPrinter().pprint(tstLabels)
+
+    # ----------------------------------------------------------------------
+
+    # 计算特征重要性
+    fieldName2Importance = genFeatImportances(fieldName2Index, trnFeats, trnLabels)
+    UniPrinter().pprint(fieldName2Importance)
 
     # 训练模型并预测
     clf = getClassifier(cf.modelName, cf.modelParam)
@@ -325,9 +388,5 @@ def predict():
 
 
 if __name__ == '__main__':
-    backTest()
 
-    #reader = CMSBReader(cf.fieldName2fieldType)
-    #featLoanFilenames = [os.path.join(cf.loanDir, '2014-2'), os.path.join(cf.loanDir, '2014-3')]
-    #fieldName2Index, loans = reader.readLoans(featLoanFilenames)
-    #UniPrinter().pprint(loans)
+    backTest()
