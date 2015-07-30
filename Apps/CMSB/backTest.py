@@ -234,7 +234,7 @@ def saveSamples(fieldName2Index, custNum2ProtolNums, feats, labels, filename):
     保存样本
 
     Args:
-        fieldName2Index (dict): 待训练的分类器
+        fieldName2Index (dict): 字段索引
         feats (list): 客户号和特征值，格式为:
                       [
                           [客户号1, [特征值11, 特征值12, ...]],

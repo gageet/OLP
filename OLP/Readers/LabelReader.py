@@ -31,26 +31,35 @@ class LabelReader:
         '''
         从贷款表中得到每一行的信誉度，良好或不良。
         :param table4Labeling: 已经读取且去重的贷款协议表
-        :return: [[协议号，客户号，是否不良]，[协议号，客户号，是否不良]，……]
+        :return: [[客户号，是否不良]，[客户号，是否不良]，……]
         '''
+        cust2prot = self.table4Labeling[2]
         tableContentDict = self.table4Labeling[1]
         self.title2index = self.table4Labeling[0]
         loanReputations = []
 
-        for tableKey in tableContentDict:
-            if tableKey in self.tableFiltered:
-                loanReputationRecord = self.getReputation(tableContentDict[tableKey], tableKey)
-                loanReputations.append(loanReputationRecord)
+        for cust in cust2prot:
+            reput = 0
+            for proto in cust2prot[cust]:
+                if self.calculateReputation(tableContentDict[proto], proto) == 1:
+                    reput = 1
+                    break
+            loanReputations.append([cust, reput])
         return loanReputations
+        # for tableKey in tableContentDict:
+        #     if tableKey in self.tableFiltered:
+        #         loanReputationRecord = self.getReputation(tableContentDict[tableKey], tableKey)
+        #         loanReputations.append(loanReputationRecord)
+        # return loanReputations
 
-    def getReputation(self, contentDictValue, tableKey):
-        '''
-        得到该条记录的信誉度。
-        :param contentDictValue:
-        :param tableKey:
-        :return: [协议号，客户号，是否不良]
-        '''
-        return [tableKey, contentDictValue[self.title2index[self.custNo]][0], self.calculateReputation(contentDictValue)]
+    # def getReputation(self, contentDictValue, tableKey):
+    #     '''
+    #     得到该条记录的信誉度。
+    #     :param contentDictValue:
+    #     :param tableKey:
+    #     :return: [协议号，客户号，是否不良]
+    #     '''
+    #     return [tableKey, contentDictValue[self.title2index[self.custNo]][0], self.calculateReputation(contentDictValue)]
 
     def calculateReputation(self, contentDictValue):
         '''
