@@ -1,6 +1,7 @@
 # coding: utf-8
 
 import CounterConfig
+import math
 from ReaderTools import UniPrinter
 
 class TransCounter:
@@ -32,13 +33,12 @@ class TransCounter:
                 calcResult = self.calcProp(self.tableContent[loanKey], CounterConfig.countRules[propKey])
                 value.append(calcResult)
             self.resultDict[loanKey] = value
-            print 'value',value
         return self.indiTitle2index, self.resultDict
 
     def calcProp(self, loan, prop):
         '''
-        得到某个贷款信息的某条间接属性
-        :param loan: 某条贷款的所有交易记录
+        得到某个客户信息的某条间接属性
+        :param loan: 某条客户的所有交易记录
         :param prop: 配置信息中要统计的某条间接属性
         :return:
         '''
@@ -47,6 +47,7 @@ class TransCounter:
         title = prop['title']
         rules = prop['rules']
 
+        addedElement = []
         for i in range(len(loan[0])):
             ruleFlag = True
             for ruleKey in rules:
@@ -54,18 +55,9 @@ class TransCounter:
                     ruleFlag = False
 
             if ruleFlag:
-                sum += float(loan[self.title2index[title]][i])
-                count += 1
-        if formula == 'sum':
-            print sum
-            return sum
-        elif formula == 'count':
-            print count
-            return count
-        elif formula == 'average':
-            print sum,count
-            if count == 0:
-                return 0.0
-            else:
-                return sum/count
-        return None
+                addedElement.append(float(loan[self.title2index[title]][i]))
+
+        result = formula(addedElement)
+        if math.isnan(result):
+            result = 0
+        return result

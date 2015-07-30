@@ -3,10 +3,10 @@
 import os
 
 # 数据
-trnFeatMonths = ['2014-2', '2014-3']
-trnLabelMonths = ['2014-4', '2014-5']
-tstFeatMonths = ['2014-6', '2014-7']
-tstLabelMonths = ['2014-8', '2014-9']
+trnFeatMonths = ['2014/2', '2014/3']
+trnLabelMonths = ['2014/4', '2014/5']
+tstFeatMonths = ['2014/6', '2014/7']
+tstLabelMonths = ['2014/8', '2014/9']
 
 
 def _bool(string='0'):

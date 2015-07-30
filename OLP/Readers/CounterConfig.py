@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import numpy
 '''
 配置文件
 '''
@@ -26,9 +27,38 @@ lastRepayDate = '上次付款日期'
 shouldRepayDate = '本月应还款日期'
 # 默认时间，可能会在prodContactCounter统计时间用到
 defaultDate = '0001/1/1'
-
+loanCountTitle = {
+    #'核心客户号': str,
+    #'协议号': str,
+    #'还款卡号': str,
+    '放款金额': sum,
+    #'统计日期': str,
+    #'放款日期': str,
+    '已还期数': sum,
+    '欠款期数': sum,
+    '剩余期限': sum,
+    '还款卡号余额': sum,
+    '本月应还款金额': sum,
+    '最长一期逾期天数': sum,
+    '最近欠款天数': sum,
+    '累计逾期次数': sum,
+    '本年逾期次数': sum,
+    '剩余本金': sum,
+    '正常本金': sum,
+    '逾期本金': sum,
+    '当期应还利息': sum,
+    '已还正常本金': sum,
+    '已还利息总额': sum,
+    '已还罚息总额': sum,
+    '已还逾期本金总额': sum,
+    '贷款月日均': sum,
+    '贷款季日均': sum,
+    '贷款年日均': sum,
+    #'结清标志': bool,
+    #'五级分类代码': str
+}
 # 提取feature时，提取贷款表中下列title的特征
-loanfeatTitle = {
+loanFeatTitle = {
     #'核心客户号': str,
     #'协议号': str,
     #'还款卡号': str,
@@ -65,63 +95,63 @@ loanfeatTitle = {
 # 'title':'折人民币',  # 统计哪一项
 # 'rules':{title1: value1,title2: value2 # 统计的筛选条件
 # }}
-countRules = {'notCorpIncomeTotalMoney':{'formula':'sum',
+countRules = {'notCorpIncomeTotalMoney':{'formula':sum,
                                    'title':'折人民币',
                                    'rules':{'借贷标志':True,'客户类型':'客户类型2'}
                                    },
-              'notCorpIncomeTotalCount':{'formula':'count',
+              'notCorpIncomeTotalCount':{'formula':len,
                                    'title':'折人民币',
                                    'rules':{'借贷标志':True,'客户类型':'客户类型2'}
                                    },
-              'notCorpIncomeAvg':{'formula':'average',
+              'notCorpIncomeAvg':{'formula':numpy.mean,
                                    'title':'折人民币',
                                    'rules':{'借贷标志':True,'客户类型':'客户类型2'}
                                    },
-              'notCorpOutcomeTotalMoney':{'formula':'sum',
+              'notCorpOutcomeTotalMoney':{'formula':sum,
                                    'title':'折人民币',
                                    'rules':{'借贷标志':True,'客户类型':'客户类型2'}
                                    },
-              'notCorpOutcomeTotalCount':{'formula':'count',
+              'notCorpOutcomeTotalCount':{'formula':len,
                                    'title':'折人民币',
                                    'rules':{'借贷标志':True,'客户类型':'客户类型2'}
                                    },
-              'notCorpOutcomeAvg':{'formula':'average',
+              'notCorpOutcomeAvg':{'formula':numpy.mean,
                                    'title':'折人民币',
                                    'rules':{'借贷标志':True,'客户类型':'客户类型2'}
                                    },
-              'notCorpOurBankRivalIncomeTotalMoney':{'formula':'sum',
+              'notCorpOurBankRivalIncomeTotalMoney':{'formula':sum,
                                                        'title':'折人民币',
                                                        'rules':{'借贷标志':False,'客户类型':'客户类型3','对方是否我行客户':True}
                                                        },
-              'notCorpOurBankRivalIncomeTotalCount':{'formula':'count',
+              'notCorpOurBankRivalIncomeTotalCount':{'formula':len,
                                                        'title':'折人民币',
                                                        'rules':{'借贷标志':False,'客户类型':'客户类型3','对方是否我行客户':True}
                                                        },
-              'notCorpOurBankRivalIncomeAvg':{'formula':'average',
+              'notCorpOurBankRivalIncomeAvg':{'formula':numpy.mean,
                                                  'title':'折人民币',
                                                  'rules':{'借贷标志':False,'客户类型':'客户类型3','对方是否我行客户':True}
                                                  },
-              'CorpIncomeTotalMoney':{'formula':'sum',
+              'CorpIncomeTotalMoney':{'formula':sum,
                                    'title':'折人民币',
                                    'rules':{'借贷标志':False,'客户类型':'客户类型3'}
                                    },
-              'CorpIncomeTotalCount':{'formula':'count',
+              'CorpIncomeTotalCount':{'formula':len,
                                    'title':'折人民币',
                                    'rules':{'借贷标志':False,'客户类型':'客户类型3'}
                                    },
-              'CorpIncomeAvg':{'formula':'average',
+              'CorpIncomeAvg':{'formula':numpy.mean,
                                'title':'折人民币',
                                'rules':{'借贷标志':False,'客户类型':'客户类型3'}
                               },
-               'CorpOurBankRivalIncomeTotalMoney':{'formula':'sum',
+               'CorpOurBankRivalIncomeTotalMoney':{'formula':sum,
                                                        'title':'折人民币',
                                                        'rules':{'借贷标志':False,'客户类型':'客户类型1','对方是否我行客户':True}
                                                        },
-              'CorpOurBankRivalIncomeTotalCount':{'formula':'count',
+              'CorpOurBankRivalIncomeTotalCount':{'formula':len,
                                                        'title':'折人民币',
                                                        'rules':{'借贷标志':False,'客户类型':'客户类型1','对方是否我行客户':True}
                                                        },
-              'CorpOurBankRivalIncomeAvg':{'formula':'average',
+              'CorpOurBankRivalIncomeAvg':{'formula':numpy.mean,
                                                  'title':'折人民币',
                                                  'rules':{'借贷标志':False,'客户类型':'客户类型1','对方是否我行客户':False}
                                                  },
