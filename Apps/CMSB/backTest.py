@@ -9,6 +9,7 @@ from OLP.Readers.FeatureBuilder import FeatureBuilder
 from OLP.Readers.ProdContactCounter import ProdContactCounter
 from OLP.Readers.TransCounter import TransCounter
 from OLP.Readers.LabelReader import LabelReader
+from OLP.core.sample import Sample, Samples
 from OLP.Models.Classifier import getClassifier
 from OLP.Metrics.Metric import getMetric
 import config as cf
@@ -88,6 +89,22 @@ def genLabels(loanFieldName2Index, featLoans, labelLoans):
     return labels
 
 
+def gen_samples(field_indexes, custNum2ProtolNums, feats, labels):
+    samples = Samples(field_indexes)
+    for feat, label in zip(feats, labels):
+        cust_num = feat[0]
+        protol_nums = custNum2ProtolNums[cust_num]
+        X = feat[1]
+        y = label[1]
+        sample = Sample(field_indexes, cust_num, protol_nums, X, y)
+        samples.add(sample)
+    return samples
+
+
+def analyze_samples(samples):
+    pass
+
+
 def genFeatImportances(fieldName2Index, feats, labels):
     '''
     计算特征重要性
@@ -141,60 +158,39 @@ def statFeats(feats, labels):
     return avgFeats, stdFeats
 
 
-def fitModel(clf, feats, labels):
+def fit_model(clf, samples):
     '''
     训练模型
 
     Args:
         clf (Classifier): 待训练的分类器
-        feats (list): 客户号和特征值，格式为:
-                      [
-                          [客户号1, [特征值11, 特征值12, ...]],
-                          [客户号2, [特征值21, 特征值22, ...]],
-                          ...
-                      ]
-        labels (list): 客户号和类别标签，格式为:
-                       [
-                           [客户号1, 类别标签1],
-                           [客户号2, 类别标签2],
-                           ...
-                       ]
+        samples (Samples): 训练样本
 
     Returns:
         Classifier: 训练后的分类器
     '''
-    Xs = [_[1] for _ in feats]
-    ys = [_[1] for _ in labels]
+    Xs = samples.get_Xs()
+    ys = samples.get_ys()
     clf.fit(Xs, ys)
     return clf
 
 
-def predictLabels(clf, feats):
+def predict_labels(clf, samples):
     '''
     预测分类标签
 
     Args:
         clf (Classifier): 训练后的分类器
-        feats (list): 客户号和特征值，格式为:
-                      [
-                          [客户号1, [特征值11, 特征值12, ...]],
-                          [客户号2, [特征值21, 特征值22, ...]],
-                          ...
-                      ]
+        samples (Samples): 待预测样本
 
     Returns:
-        list: 客户号和类别标签，格式为:
-              [
-                  [客户号1, 类别标签1],
-                  [客户号2, 类别标签2],
-                  ...
-              ]
+        samples (Samples): 预测后的样本
     '''
-    labels = []
-    for custNum, X in feats:
-        y = clf.predict([X])[0]
-        labels.append([custNum, y])
-    return labels
+    Xs = samples.get_Xs()
+    ys = clf.predict(Xs)
+    for i, sample in enumerate(samples):
+        sample.set_y_pred(ys[i])
+    return samples
 
 
 def genReport(metricNames, labels, labelsPred):
@@ -311,32 +307,27 @@ def backTest():
     trnLabels = genLabels(loanFieldName2Index, trnFeatLoans, trnLabelLoans)
     tstLabels = genLabels(loanFieldName2Index, tstFeatLoans, tstLabelLoans)
 
-    print 'trnLabels'
-    UniPrinter().pprint(trnLabels)
-    print 'tstLabels'
-    UniPrinter().pprint(tstLabels)
+    # 生成样本
+    trn_samples = gen_samples(fieldName2Index, trnFeatCustNum2ProtolNums, trnFeats. trnLabels)
+    tst_samples = gen_samples(fieldName2Index, tstFeatCustNum2ProtolNums, tstFeats, tstLabels)
 
     # ----------------------------------------------------------------------
-
     # 计算特征重要性
-    fieldName2Importance = genFeatImportances(fieldName2Index, trnFeats, trnLabels)
-    UniPrinter().pprint(fieldName2Importance)
+    # fieldName2Importance = genFeatImportances(fieldName2Index, trnFeats, trnLabels)
+    # UniPrinter().pprint(fieldName2Importance)
 
     # 训练模型并预测
     clf = getClassifier(cf.modelName, cf.modelParam)
-    fitModel(clf, trnFeats, trnLabels)
-    tstLabelsPred = predictLabels(clf, tstFeats)
-    print 'tstLabelsPred'
-    UniPrinter().pprint(tstLabelsPred)
+    fit_model(clf, trn_samples)
+    predict_labels(clf, tst_samples)
 
     # 保存样本
-    saveSamples(fieldName2Index, trnFeats, trnLabels, cf.trnSampFilename)
-    saveSamples(fieldName2Index, tstFeats, tstLabels, cf.tstSampFilename)
-    saveSamples(fieldName2Index, tstFeats, tstLabelsPred, cf.predSampFilename)
+    trn_samples.save(cf.trnSampFilename)
+    tst_samples.save(cf.tstSampFilename)
 
     # 计算评价指标
-    reports = genReport(cf.metricNames, tstLabels, tstLabelsPred)
-    print reports
+    # reports = genReport(cf.metricNames, tstLabels, tstLabelsPred)
+    # print reports
 
 
 def predict():
@@ -379,7 +370,7 @@ def predict():
 
     # 训练模型并预测
     clf = getClassifier(cf.modelName, cf.modelParam)
-    fitModel(clf, trnFeats, trnLabels)
+    fit_model(clf, trnFeats, trnLabels)
     tstLabelsPred = predictLabels(clf, tstFeats)
 
     # 保存样本
