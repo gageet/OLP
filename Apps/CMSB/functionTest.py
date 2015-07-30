@@ -25,11 +25,14 @@ prodCounter = ProdContactCounter(prodTable, config.trnFeatMonths[-1]+'/31').coun
 UniPrinter().pprint(loanTable)
 UniPrinter().pprint(transTable)
 UniPrinter().pprint(prodTable)
-
+print 'haha'
+UniPrinter().pprint(loanCounter)
+UniPrinter().pprint(transCounter)
+UniPrinter().pprint(prodCounter)
 
 fb = FeatureBuilder(loanCounter, transCounter, prodCounter)
 fbResult = fb.buildFeature()
-
+print 'hehe'
 UniPrinter().pprint(fbResult)
 
 

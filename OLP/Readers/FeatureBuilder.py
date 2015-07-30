@@ -25,21 +25,19 @@ class FeatureBuilder:
         :return:
         '''
         resultRecords = []
-        for exeTime,loanNo in enumerate(self.LTLoans):
-            loanRecord = self.LTLoans[loanNo]
-            customerNo = loanRecord[self.LTTitle2index[loanCustNoTitle]][0]
-            transRecord = self.TFTTrans[customerNo]
-            prodRecord = self.prodFeatTable[customerNo]
+        for exeTime,custNo in enumerate(self.LTLoans):
+            loanRecord = self.LTLoans[custNo]
+            transRecord = self.TFTTrans[custNo]
+            prodRecord = self.prodFeatTable[custNo]
             # 计算该贷款的所有特征并返回
-            features = self.getFeature(exeTime, loanNo, customerNo, loanRecord, transRecord, prodRecord)
-            resultRecords.append([loanNo, customerNo, features])
+            features = self.getFeature(exeTime, custNo, loanRecord, transRecord, prodRecord)
+            resultRecords.append([custNo, features])
         return self.title2index, resultRecords
 
-    def getFeature(self, exeTime, loanNo, customerNo, loanRecord, transRecord, prodRecord):
+    def getFeature(self, exeTime, customerNo, loanRecord, transRecord, prodRecord):
         '''
         计算某个协议号的特征
         :param exeTime: 第几次调用本函数
-        :param loanNo: 协议号
         :param customerNo: 用户号
         :param loanRecord: 贷款表
         :param transRecord: 交易流水特征表
