@@ -44,7 +44,7 @@ def getRandDateGenerator():
 
 def getRandBoolGenerator():
     def genRandBool():
-        return random.choice(['', '1'])
+        return random.choice(['0', '1'])
     return genRandBool
 
 
