@@ -30,12 +30,12 @@ defaultDate = '0001/1/1'
 
 # 提取feature时，提取贷款表中下列title的特征
 loanfeatTitle = {
-    '核心客户号': str,
-    '协议号': str,
-    '还款卡号': str,
+    #'核心客户号': str,
+    #'协议号': str,
+    #'还款卡号': str,
     '放款金额': float,
-    '统计日期': str,
-    '放款日期': str,
+    #'统计日期': str,
+    #'放款日期': str,
     '已还期数': float,
     '欠款期数': float,
     '剩余期限': float,
@@ -56,8 +56,8 @@ loanfeatTitle = {
     '贷款月日均': float,
     '贷款季日均': float,
     '贷款年日均': float,
-    '结清标志': bool,
-    '五级分类代码': str
+    #'结清标志': bool,
+    #'五级分类代码': str
 }
 
 # 统计交易流水表中的下列属性，作为该表特征

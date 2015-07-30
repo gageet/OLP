@@ -14,6 +14,17 @@ import config as cf
 
 
 def filterLoans(filterNames, fieldName2Index, loans):
+    '''
+    根据指定规则过滤贷款协议数据
+
+    Args:
+        filterNames (list): 过滤器名称列表
+        fieldName2Index (dict): 贷款协议表字段索引
+        loans (dict): 贷款协议表数据
+
+    Returns:
+        dict: 过滤后的贷款协议表数据
+    '''
     filters = [getFilter(filterName) for filterName in filterNames]
     for filter_ in filters:
         fieldName2Index, loans = filter_.filter(fieldName2Index, loans)
@@ -23,6 +34,26 @@ def filterLoans(filterNames, fieldName2Index, loans):
 def genFeats(loanFieldName2Index, loans,
              transFieldName2Index, transs,
              prodFieldName2Index, prods):
+    '''
+    为每笔贷款生成特征
+
+    Args:
+        loanFieldName2Index (dict): 贷款协议表字段索引
+        loans (dict): 贷款协议表数据
+        transFieldName2Index (dict): 交易流水表字段索引
+        transs (dict): 交易流水表数据
+        prodFieldName2Index (dict): 产品签约表字段索引
+        prods (dict): 产品签约表数据
+
+    Returns:
+        dict: 特征字段索引
+        list: 贷款协议号，客户号和特征值，格式为:
+              [
+                  [贷款协议号1, 客户号1, [特征值11, 特征值12, ...]],
+                  [贷款协议号2, 客户号2, [特征值21, 特征值22, ...]],
+                  ...
+              ]
+    '''
     transFieldName2Index, transs = TransCounter((transFieldName2Index, transs)).countProp()
     prods = ProdContactCounter((prodFieldName2Index, prods), '2014/3/31').countProdContact()
     builder = FeatureBuilder((loanFieldName2Index, loans),
@@ -34,6 +65,22 @@ def genFeats(loanFieldName2Index, loans,
 
 
 def genLabels(loanFieldName2Index, featLoans, labelLoans):
+    '''
+    为每笔贷款生成类别标签
+
+    Args:
+        loanFieldName2Index (dict): 贷款协议表字段索引
+        featLoans (dict): 用于生成特征的贷款协议表数据
+        labelLoans (dict): 用于生成标签的贷款协议表数据
+
+    Returns:
+        list: 贷款协议号，客户号和类别标签，格式为:
+              [
+               [贷款协议号1, 客户号1, 类别标签1],
+               [贷款协议号2, 客户号2, 类别标签2],
+               ...
+              ]
+    '''
     reader = LabelReader((loanFieldName2Index, labelLoans),
                          featLoans)
     labels = reader.readLabel()
@@ -42,6 +89,27 @@ def genLabels(loanFieldName2Index, featLoans, labelLoans):
 
 
 def fitModel(clf, feats, labels):
+    '''
+    训练模型
+
+    Args:
+        clf (Classifier): 待训练的分类器
+        feats (list): 贷款协议号，客户号和特征值，格式为:
+                      [
+                          [贷款协议号1, 客户号1, [特征值11, 特征值12, ...]],
+                          [贷款协议号2, 客户号2, [特征值21, 特征值22, ...]],
+                          ...
+                      ]
+        labels (list): 贷款协议号，客户号和类别标签，格式为:
+                       [
+                           [贷款协议号1, 客户号1, 类别标签1],
+                           [贷款协议号2, 客户号2, 类别标签2],
+                           ...
+                       ]
+
+    Returns:
+        Classifier: 训练后的分类器
+    '''
     Xs = [_[2] for _ in feats]
     ys = [_[2] for _ in labels]
     clf.fit(Xs, ys)
@@ -49,6 +117,26 @@ def fitModel(clf, feats, labels):
 
 
 def predictLabels(clf, feats):
+    '''
+    预测分类标签
+
+    Args:
+        clf (Classifier): 训练后的分类器
+        feats (list): 贷款协议号，客户号和特征值，格式为:
+                      [
+                          [贷款协议号1, 客户号1, [特征值11, 特征值12, ...]],
+                          [贷款协议号2, 客户号2, [特征值21, 特征值22, ...]],
+                          ...
+                      ]
+
+    Returns:
+        list: 贷款协议号，客户号和类别标签，格式为:
+              [
+                  [贷款协议号1, 客户号1, 类别标签1],
+                  [贷款协议号2, 客户号2, 类别标签2],
+                  ...
+              ]
+    '''
     labels = []
     for protolNum, custNum, X in feats:
         y = clf.predict([X])[0]
@@ -56,7 +144,28 @@ def predictLabels(clf, feats):
     return labels
 
 
-def genMetrics(metricNames, labels, labelsPred):
+def genReport(metricNames, labels, labelsPred):
+    '''
+    生成模型评估报告
+
+    Args:
+        metricNames (list): 指标名称列表
+        labels (list): 贷款协议号，客户号和类别标签，格式为:
+                       [
+                           [贷款协议号1, 客户号1, 类别标签1],
+                           [贷款协议号2, 客户号2, 类别标签2],
+                           ...
+                       ]
+        labelsPred (list): 贷款协议号，客户号和类别标签，格式为:
+                           [
+                               [贷款协议号1, 客户号1, 类别标签1],
+                               [贷款协议号2, 客户号2, 类别标签2],
+                               ...
+                           ]
+
+    Returns:
+        str: 模型评估报告
+    '''
     reports = ''
     ys = [_[2] for _ in labels]
     ysPred = [_[2] for _ in labelsPred]
@@ -70,6 +179,26 @@ def genMetrics(metricNames, labels, labelsPred):
 
 
 def saveSamples(fieldName2Index, feats, labels, filename):
+    '''
+    保存样本
+
+    Args:
+        fieldName2Index (dict): 待训练的分类器
+        feats (list): 贷款协议号，客户号和特征值，格式为:
+                      [
+                          [贷款协议号1, 客户号1, [特征值11, 特征值12, ...]],
+                          [贷款协议号2, 客户号2, [特征值21, 特征值22, ...]],
+                          ...
+                      ]
+        labels (list): 贷款协议号，客户号和类别标签，格式为:
+                       [
+                           [贷款协议号1, 客户号1, 类别标签1],
+                           [贷款协议号2, 客户号2, 类别标签2],
+                           ...
+                       ]
+        filename (str): 文件名
+    '''
+
     items = fieldName2Index.items()
     items.sort(key=lambda item: item[1])
 
@@ -86,6 +215,9 @@ def saveSamples(fieldName2Index, feats, labels, filename):
 
 
 def backTest():
+    '''
+    回测
+    '''
     # 读入贷款协议数据，交易流水数据和签约产品数据
     reader = CMSBReader(cf.fieldName2fieldType)
 
@@ -140,11 +272,14 @@ def backTest():
     saveSamples(fieldName2Index, tstFeats, tstLabelsPred, cf.predSampFilename)
 
     # 计算评价指标
-    reports = genMetrics(cf.metricNames, tstLabels, tstLabelsPred)
+    reports = genReport(cf.metricNames, tstLabels, tstLabelsPred)
     print reports
 
 
 def predict():
+    '''
+    预测
+    '''
     # 读入贷款协议数据，交易流水数据和签约产品数据
     reader = CMSBReader(cf.fieldName2fieldType)
 

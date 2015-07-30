@@ -39,14 +39,14 @@ fieldName2fieldType = {
     '贷款月日均': float,
     '贷款季日均': float,
     '贷款年日均': float,
-    '结清标志': bool,
+    '结清标志': lambda item: item == '1',
     '五级分类代码': str,
     # 流水表
     '我行客户号': str,
     '客户类型': str,  # enum
-    '借贷标志': bool,
+    '借贷标志': lambda item: item == '1',
     '折人民币': float,
-    '汇款标志': bool,
+    '汇款标志': lambda item: item == '1',
     '交易机构': str,  # enum
     '交易代码': str,  # enum
     '结算方式': str,  # enum
@@ -54,7 +54,7 @@ fieldName2fieldType = {
     '对方所在地区': str,  # enum
     '对方行号类型': str,  # enum
     '对方银行名称': str,
-    '对方是否我行客户': bool,
+    '对方是否我行客户': lambda item: item == '1',
     '交易渠道': str,  # enum
     '交易发生地行政区': str,  # enum
     '交易去向行政区': str,  # enum
