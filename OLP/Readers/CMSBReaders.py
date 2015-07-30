@@ -284,7 +284,7 @@ class CMSBReader(object):
 
         for protolNum in loans:
             custNumIndex = fieldName2Index[self.loanCustNumName]
-            custNum = loans[protolNum][custNumIndex][0]
+            custNum = loans[protolNum][custNumIndex][-1]
             if custNum not in custNum2ProtolNum:
                 custNum2ProtolNum[custNum] = [protolNum]
             else:
