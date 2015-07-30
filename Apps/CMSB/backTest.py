@@ -15,7 +15,7 @@ from OLP.Metrics.Metric import getMetric
 import config as cf
 
 
-def filterLoans(filterNames, fieldName2Index, loans):
+def filterLoans(filterNames, fieldName2Index, loans, custNum2ProtolNums):
     '''
     根据指定规则过滤贷款协议数据
 
@@ -29,11 +29,11 @@ def filterLoans(filterNames, fieldName2Index, loans):
     '''
     filters = [getFilter(filterName) for filterName in filterNames]
     for filter_ in filters:
-        fieldName2Index, loans = filter_.filter(fieldName2Index, loans)
+        fieldName2Index, loans, custNum2ProtolNums = filter_.filter(fieldName2Index, loans, custNum2ProtolNums)
     return loans
 
 
-def genFeats(loanFieldName2Index, loans,
+def genFeats(loanFieldName2Index, loans, custNum2ProtolNums,
              transFieldName2Index, transs,
              prodFieldName2Index, prods):
     '''
@@ -58,7 +58,7 @@ def genFeats(loanFieldName2Index, loans,
     '''
     transFieldName2Index, transs = TransCounter((transFieldName2Index, transs)).countProp()
     prods = ProdContactCounter((prodFieldName2Index, prods), '2014/3/31').countProdContact()
-    builder = FeatureBuilder((loanFieldName2Index, loans),
+    builder = FeatureBuilder((loanFieldName2Index, loans, custNum2ProtolNums),
                              (transFieldName2Index, transs),
                              prods)
     fieldName2Index, feats = builder.buildFeature()
@@ -66,7 +66,7 @@ def genFeats(loanFieldName2Index, loans,
     return fieldName2Index, feats
 
 
-def genLabels(loanFieldName2Index, featLoans, labelLoans):
+def genLabels(loanFieldName2Index, featLoans, labelLoans, custNum2ProtolNums):
     '''
     为每笔贷款生成类别标签
 
@@ -83,7 +83,7 @@ def genLabels(loanFieldName2Index, featLoans, labelLoans):
                ...
               ]
     '''
-    reader = LabelReader((loanFieldName2Index, labelLoans), featLoans)
+    reader = LabelReader((loanFieldName2Index, labelLoans, custNum2ProtolNums), featLoans)
     labels = reader.readLabel()
     labels.sort(key=lambda item: item[0])
     return labels
@@ -96,7 +96,7 @@ def gen_samples(field_indexes, custNum2ProtolNums, feats, labels):
         protol_nums = custNum2ProtolNums[cust_num]
         X = feat[1]
         y = label[1]
-        sample = Sample(field_indexes, cust_num, protol_nums, X, y)
+        sample = Sample(cust_num, protol_nums, X, y)
         samples.add(sample)
     return samples
 
@@ -171,6 +171,9 @@ def fit_model(clf, samples):
     '''
     Xs = samples.get_Xs()
     ys = samples.get_ys()
+    ys[0] = 1
+    UniPrinter().pprint(Xs)
+    UniPrinter().pprint(ys)
     clf.fit(Xs, ys)
     return clf
 
@@ -291,24 +294,24 @@ def backTest():
     loanFieldName2Index, tstLabelLoans, tstLabelCustNum2ProtolNums = reader.readLoans(tstLabelLoanFilenames)
 
     # 过滤贷款协议数据
-    trnFeatLoans = filterLoans(cf.filterNames, loanFieldName2Index, trnFeatLoans)
-    tstFeatLoans = filterLoans(cf.filterNames, loanFieldName2Index, tstFeatLoans)
+    trnFeatLoans = filterLoans(cf.filterNames, loanFieldName2Index, trnFeatLoans, trnFeatCustNum2ProtolNums)
+    tstFeatLoans = filterLoans(cf.filterNames, loanFieldName2Index, tstFeatLoans, tstFeatCustNum2ProtolNums)
 
     # ----------------------------------------------------------------------
     # 生成用户特征
-    fieldName2Index, trnFeats = genFeats(loanFieldName2Index, trnFeatLoans,
+    fieldName2Index, trnFeats = genFeats(loanFieldName2Index, trnFeatLoans, trnFeatCustNum2ProtolNums,
                                          transFieldName2Index, trnFeatTranss,
                                          prodFieldName2Index, trnFeatProds)
-    fieldName2Index, tstFeats = genFeats(loanFieldName2Index, tstFeatLoans,
+    fieldName2Index, tstFeats = genFeats(loanFieldName2Index, tstFeatLoans, tstFeatCustNum2ProtolNums,
                                          transFieldName2Index, tstFeatTranss,
                                          prodFieldName2Index, tstFeatProds)
 
     # 生成用户标签
-    trnLabels = genLabels(loanFieldName2Index, trnFeatLoans, trnLabelLoans)
-    tstLabels = genLabels(loanFieldName2Index, tstFeatLoans, tstLabelLoans)
+    trnLabels = genLabels(loanFieldName2Index, trnFeatLoans, trnLabelLoans, trnFeatCustNum2ProtolNums)
+    tstLabels = genLabels(loanFieldName2Index, tstFeatLoans, tstLabelLoans, tstFeatCustNum2ProtolNums)
 
     # 生成样本
-    trn_samples = gen_samples(fieldName2Index, trnFeatCustNum2ProtolNums, trnFeats. trnLabels)
+    trn_samples = gen_samples(fieldName2Index, trnFeatCustNum2ProtolNums, trnFeats, trnLabels)
     tst_samples = gen_samples(fieldName2Index, tstFeatCustNum2ProtolNums, tstFeats, tstLabels)
 
     # ----------------------------------------------------------------------

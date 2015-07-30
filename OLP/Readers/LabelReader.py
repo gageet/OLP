@@ -41,7 +41,7 @@ class LabelReader:
         for cust in cust2prot:
             reput = 0
             for proto in cust2prot[cust]:
-                if self.calculateReputation(tableContentDict[proto], proto) == 1:
+                if self.calculateReputation(tableContentDict[proto]) == 1:
                     reput = 1
                     break
             loanReputations.append([cust, reput])
