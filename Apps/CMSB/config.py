@@ -8,6 +8,10 @@ trnLabelMonths = ['2014-4', '2014-5']
 tstFeatMonths = ['2014-6', '2014-7']
 tstLabelMonths = ['2014-8', '2014-9']
 
+
+def _bool(string='0'):
+    return False if string == '0' else True
+
 fieldName2fieldType = {
     # 贷款表
     '核心客户号': str,
@@ -39,14 +43,14 @@ fieldName2fieldType = {
     '贷款月日均': float,
     '贷款季日均': float,
     '贷款年日均': float,
-    '结清标志': lambda item: item == '1',
+    '结清标志': _bool,
     '五级分类代码': str,
     # 流水表
     '我行客户号': str,
     '客户类型': str,  # enum
-    '借贷标志': lambda item: item == '1',
+    '借贷标志': _bool,
     '折人民币': float,
-    '汇款标志': lambda item: item == '1',
+    '汇款标志': _bool,
     '交易机构': str,  # enum
     '交易代码': str,  # enum
     '结算方式': str,  # enum
@@ -54,7 +58,7 @@ fieldName2fieldType = {
     '对方所在地区': str,  # enum
     '对方行号类型': str,  # enum
     '对方银行名称': str,
-    '对方是否我行客户': lambda item: item == '1',
+    '对方是否我行客户': _bool,
     '交易渠道': str,  # enum
     '交易发生地行政区': str,  # enum
     '交易去向行政区': str,  # enum
