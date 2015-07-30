@@ -31,7 +31,6 @@ class TransCounter:
             value = []
             for propKey in CounterConfig.countRules:
                 calcResult = self.calcProp(self.tableContent[loanKey], CounterConfig.countRules[propKey])
-                print loanKey,propKey,calcResult
                 value.append(calcResult)
             self.resultDict[loanKey] = value
         return self.indiTitle2index, self.resultDict

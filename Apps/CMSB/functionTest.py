@@ -4,6 +4,7 @@ from OLP.Readers.ReaderTools import UniPrinter
 from OLP.Readers.FeatureBuilder import FeatureBuilder
 from OLP.Readers.TransCounter import TransCounter
 from OLP.Readers.ProdContactCounter import ProdContactCounter
+from OLP.Readers.LoanCounter import LoanCounter
 
 #tableObject = CMSBReader(config.fieldName2fieldType)
 #table = tableObject.readProds(['prods.txt',])
@@ -12,7 +13,8 @@ from OLP.Readers.ProdContactCounter import ProdContactCounter
 #UniPrinter().pprint(tableFiltered)
 
 tableObject = CMSBReader(config.fieldName2fieldType)
-loanTable = tableObject.readLoans(['loan.txt',])
+loanTable = tableObject.readLoans(['loan.txt','loan2.txt'])
+loanCounter = LoanCounter(loanTable).countLoan()
 
 transTable = tableObject.readTranss(['trans.txt',])
 transCounter = TransCounter(transTable).countProp()
@@ -25,7 +27,7 @@ UniPrinter().pprint(transTable)
 UniPrinter().pprint(prodTable)
 
 
-fb = FeatureBuilder(loanTable, transCounter, prodCounter)
+fb = FeatureBuilder(loanCounter, transCounter, prodCounter)
 fbResult = fb.buildFeature()
 
 UniPrinter().pprint(fbResult)

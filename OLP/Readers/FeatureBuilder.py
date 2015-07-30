@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from CounterConfig import loanCustNoTitle, custNoTitle, loanNoTitle, contactAmountTitle
-from CounterConfig import loanfeatTitle
+from CounterConfig import loanFeatTitle
 
 
 class FeatureBuilder:
@@ -14,7 +14,7 @@ class FeatureBuilder:
         :param transFeatTable: 交易流水特征表的特征。格式 (特征表索引{特征名：该特征索引}, 交易流水表特征{})
         :param prodFeatTable: 产品签约特征表的特征。格式 {用户号: 用户签约数量}
         '''
-        self.LTTitle2index, self.LTLoans = loanTable
+        self.LTTitle2index, self.LTLoans, self.cust2Proto = loanTable
         self.TFTTitle2index, self.TFTTrans = transFeatTable
         self.prodFeatTable = prodFeatTable
         self.title2index = {}
@@ -56,7 +56,7 @@ class FeatureBuilder:
 
         # 加入贷款表中的特征
         for loanPropKey in self.LTTitle2index:
-            if loanPropKey not in propList and loanfeatTitle.has_key(loanPropKey):
+            if loanPropKey not in propList and loanFeatTitle.has_key(loanPropKey):
                 for month in months:
                     record.append(loanRecord[self.LTTitle2index[loanPropKey]][month])
                     propList.append(loanPropKey)
