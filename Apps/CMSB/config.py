@@ -2,6 +2,10 @@
 
 import os
 
+# 标签
+OVERDUE = 1
+NON_OVERDUE = 0
+
 # 数据
 trnFeatMonths = ['2014-2', '2014-3']
 trnLabelMonths = ['2014-4', '2014-5']
