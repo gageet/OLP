@@ -8,7 +8,7 @@ from OLP.Readers.FeatureBuilder import FeatureBuilder
 from OLP.Readers.ProdContactCounter import ProdContactCounter
 from OLP.Readers.TransCounter import TransCounter
 from OLP.Readers.LabelReader import LabelReader
-from OLP.core.sample import Sample, Samples
+from OLP.core.samples import Sample, Samples
 from OLP.core.models import get_classifier
 from OLP.core.metrics import get_metric
 import config as cf
@@ -88,14 +88,14 @@ def genLabels(loanFieldName2Index, featLoans, labelLoans, custNum2ProtolNums):
     return labels
 
 
-def gen_samples(x_indexes, protol_nums, feats, labels):
+def gen_samples(x_indexes, cust_num_protol_nums, feats, labels):
     '''
     将原有数据记录转为Samples格式
     '''
     samples = Samples(x_indexes)
     for feat, label in zip(feats, labels):
         cust_num = feat[0]
-        protol_nums = protol_nums[cust_num]
+        protol_nums = cust_num_protol_nums[cust_num]
         X = feat[1]
         y = label[1]
         sample = Sample(cust_num, protol_nums, X, y)
