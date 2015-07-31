@@ -56,8 +56,10 @@ class TransCounter:
 
             if ruleFlag:
                 addedElement.append(float(loan[self.title2index[title]][i]))
-
-        result = formula(addedElement)
-        if math.isnan(result):
+        if len(addedElement) == 0:
             result = 0
+        else:
+            result = formula(addedElement)
+        # if math.isnan(result):
+        #     result = 0
         return result

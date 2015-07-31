@@ -67,5 +67,8 @@ class LoanCounter:
 
         for month in range(len(custProtoRecords[0][0])):
             keyRecords = [x[self.LTTitle2index[titleKey]][month] for x in custProtoRecords]
-            result.append(formula(keyRecords))
+            if len(keyRecords) == 0:
+                result.append(0)
+            else:
+                result.append(formula(keyRecords))
         return result
