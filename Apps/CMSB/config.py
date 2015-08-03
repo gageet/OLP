@@ -109,5 +109,5 @@ metricDir = os.path.join(dataDir, 'Metrics')  # 存放评价指标等结果
 
 trnSampFilename = os.path.join(sampDir, 'trnSamples')
 tstSampFilename = os.path.join(sampDir, 'tstSamples')
-predSampFilename = os.path.join(sampDir, 'predSamples')
+analyFilename = os.path.join(metricDir, 'analysis')
 metricFilename = os.path.join(metricDir, 'metric')

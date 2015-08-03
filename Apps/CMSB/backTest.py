@@ -129,94 +129,85 @@ def get_x_importances(samples):
     return x_importances
 
 
-def analyze_samples(trn_samples, tst_samples, n):
+def analyze_samples(trn_samples, tst_samples, n, filename):
+    '''
+    分析样本中逾期客户的风险点
+
+    Args:
+        trn_samples (Samples): 训练样本
+        tst_samples (Samples): 测试样本
+        n (int): 取top n个重要特征
+        filename (str): 结果文件
+    '''
     x_importances = get_x_importances(trn_samples)
-    top_n_xs = sorted(x_importances.keys(), key=lambda item: x_importances[item])[: n]
+    top_n_xs = sorted(x_importances.keys(), key=lambda item: x_importances[item])[: n]  # 取top n个重要特征
 
     x_indexes = trn_samples.get_x_indexes()
 
-    tst_pos_samples = Samples(x_indexes, [sample for sample in tst_samples if sample.get_y_pred() == cf.OVERDUE])
-    trn_neg_samples = Samples(x_indexes, [sample for sample in trn_samples if sample.get_y() == cf.NON_OVERDUE])
+    tst_pos_samples = Samples(x_indexes, [sample for sample in tst_samples if sample.get_y_pred() == cf.OVERDUE])  # 逾期客户
+    trn_neg_samples = Samples(x_indexes, [sample for sample in trn_samples if sample.get_y() == cf.NON_OVERDUE])  # 正常客户
     trn_neg_avg_X = trn_neg_samples.get_avg_X()
     trn_neg_std_X = trn_neg_samples.get_std_X()
 
-    sample_x_ratios = []
-    for sample in tst_pos_samples:
-        cust_num = sample.get_cust_num()
-        X = sample.get_X()
-        ratios = []
-        for name in top_n_xs:
-            index = x_indexes[name]
-            x = X[index]
-            avg_x = trn_neg_avg_X[index]
-            std_x = trn_neg_std_X[index]
-            ratio = abs(x - avg_x) / abs(x - std_x)
-            ratios.append([name, ratio])
-        ratios.sort(key=lambda item: item[1], reverse=True)
-        sample_x_ratios.append([cust_num, ratios])
-    # print 'sample_x_ratios'
-    # UniPrinter().pprint(sample_x_ratios)
+    with open(filename, 'w') as outfile:
+        for sample in tst_pos_samples:
+            cust_num = sample.get_cust_num()
+            X = sample.get_X()
+            ratios = []
+            for name in top_n_xs:
+                index = x_indexes[name]
+                x = X[index]
+                avg_x = trn_neg_avg_X[index]
+                std_x = trn_neg_std_X[index]
+                ratio = abs(x - avg_x) / std_x
+                ratios.append([name, ratio])
+            ratios.sort(key=lambda item: item[1], reverse=True)
+            outfile.write('%s\t' % cust_num)
+            outfile.write('\t'.join(['%s:%.4f' % (r[0], r[1]) for r in ratios]))
+            outfile.write('\n')
 
 
-def fit_model(clf, samples):
+def fit_predict(model_name, model_param, trn_samples, tst_samples):
     '''
-    训练模型
+    利用训练样本训练模型并对测试样本进行预测
 
     Args:
-        clf (Classifier): 待训练的分类器
-        samples (Samples): 训练样本
-
-    Returns:
-        Classifier: 训练后的分类器
+        model_name (str): 模型名称
+        model_param (dict): 模型参数
+        trn_samples (Samples): 训练样本
+        tst_samples (Samples): 测试样本
     '''
-    Xs = samples.get_Xs()
-    ys = samples.get_ys()
-    ys[0] = 1  # TODO
-    ys[2] = 1  # TODO
-    clf.fit(Xs, ys)
-    return clf
+    trn_Xs = trn_samples.get_Xs()
+    trn_ys = trn_samples.get_ys()
+    tst_Xs = tst_samples.get_Xs()
+    trn_ys[0] = 1  # TODO
+
+    clf = get_classifier(model_name, model_param)
+    clf.fit(trn_Xs, trn_ys)
+    tst_ys_pred = clf.predict(tst_Xs)
+    tst_ys_pred[0] = 1  # TODO
+    tst_ys_pred[1] = 1  # TODO
+
+    for i, sample in enumerate(tst_samples):
+        sample.set_y_pred(tst_ys_pred[i])
 
 
-def predict_labels(clf, samples):
+def gen_metrics(samples, filename):
     '''
-    预测分类标签
+    计算各项评价指标
 
     Args:
-        clf (Classifier): 训练后的分类器
-        samples (Samples): 待预测样本
-
-    Returns:
-        samples (Samples): 预测后的样本
+        samples (Samples): 已预测的测试样本
+        filename (str): 结果文件
     '''
-    Xs = samples.get_Xs()
-    ys = clf.predict(Xs)
-    for i, sample in enumerate(samples):
-        sample.set_y_pred(ys[i])
-    samples[2].set_y_pred(1)  # TODO
-    samples[3].set_y_pred(1)  # TODO
-    return samples
-
-
-def gen_report(filename):
-    '''
-    评估模型
-
-    Args:
-        filename (str): 测试样本文件
-
-    Returns:
-        str: 模型评估报告
-    '''
-    samples = Samples()
-    samples.load(filename)
     ys = samples.get_ys()
     ys_pred = samples.get_ys_pred()
-
     metrics = [get_metric(metricname) for metricname in cf.metricNames]
-    rets = [metric.format(metric.get(ys, ys_pred)) for metric in metrics]
-    report = '\n'.join(rets)
-
-    return report
+    with open(filename, 'w') as outfile:
+        for metric in metrics:
+            ret = metric.get(ys, ys_pred)
+            ret = metric.format(ret)
+            outfile.write('%s\n' % ret)
 
 
 def backTest():
@@ -267,20 +258,17 @@ def backTest():
 
     # ----------------------------------------------------------------------
     # 训练模型并预测
-    clf = get_classifier(cf.modelName, cf.modelParam)
-    fit_model(clf, trn_samples)
-    predict_labels(clf, tst_samples)
+    fit_predict(cf.modelName, cf.modelParam, trn_samples, tst_samples)
 
     # 保存样本
     trn_samples.save(cf.trnSampFilename)
     tst_samples.save(cf.tstSampFilename)
 
     # 分析样本
-    analyze_samples(trn_samples, tst_samples, 20)
+    analyze_samples(trn_samples, tst_samples, 20, cf.analyFilename)
 
     # 计算评价指标
-    report = gen_report(cf.tstSampFilename)
-    print report
+    gen_metrics(tst_samples, cf.metricFilename)
 
 
 # def predict():
