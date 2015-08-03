@@ -80,22 +80,22 @@ filterNames = [
 ]
 
 # 模型
-modelName = 'OLP.Models.SVM.SVM'
+modelName = 'OLP.core.models.SVM'
 modelParam = {
     'C': 1.0,
     'kernel': 'rbf',
     'gamma': 0.0,
     'tol': 0.001,
-    'classWeight': None,
-    'maxIter': -1,
+    'class_weight': None,
+    'max_iter': -1,
 }
 
 # 指标
 metricNames = [
-    'OLP.Metrics.ClassificationMetrics.Accuracy',
-    'OLP.Metrics.ClassificationMetrics.Precision',
-    'OLP.Metrics.ClassificationMetrics.Recall',
-    'OLP.Metrics.ClassificationMetrics.F1',
+    'OLP.core.metrics.Accuracy',
+    'OLP.core.metrics.Precision',
+    'OLP.core.metrics.Recall',
+    'OLP.core.metrics.F1',
 ]
 
 # 文件
