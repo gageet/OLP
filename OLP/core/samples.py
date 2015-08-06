@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
+import xmltodict
 
 
 class Sample(object):
@@ -103,38 +104,37 @@ class Samples(list):
     def load(self, filename):
         self.clear()
         with open(filename) as infile:
-            # 读取第一行
-            firstline = infile.readline()
-            fields = firstline.strip().split('\t')
-            for index, name in enumerate(fields[4:]):
-                self._x_indexes[name] = index
-
-            for line in infile:
-                fields = line.strip().split('\t')
-                y_pred = int(fields[0])
-                y = int(fields[1])
-                cust_num = fields[2]
-                protol_nums = fields[3].split(',')
-                X = [float(x) for x in fields[4:]]
+            xml = infile.read()
+            d = xmltodict.parse(xml)
+            for i, s in enumerate(d['samples']['sample']):
+                cust_num = s['cust_num']
+                protol_nums = s['protol_nums']
+                y = int(s['y'])
+                y_pred = int(s['y_pred'])
+                X = []
+                for j, x in enumerate(s['X']['x']):
+                    val = float(x['val'])
+                    X.append(val)
+                    if i == 0:  # 构建索引
+                        name = x['name'].encode('utf-8')
+                        self._x_indexes[name] = j
                 sample = Sample(cust_num, protol_nums, X, y, y_pred)
                 self.append(sample)
 
     def save(self, filename):
-        with open(filename, 'w') as outfile:
-            items = self._x_indexes.items()
-            outfile.write('\t'.join(['是否逾期(预测)', '是否逾期(实际)', '客户号', '协议号'] + [item[0] for item in items]))
-            outfile.write('\n')
+        d = {'samples': {'sample': []}}
+        for sample in self:
+            s = {}
+            s['cust_num'] = sample.get_cust_num()
+            s['protol_nums'] = {'protol_num': sample.get_protol_nums()}
+            s['y'] = sample.get_y()
+            s['y_pred'] = sample.get_y_pred()
+            s['X'] = {'x': []}
+            X = sample.get_X()
+            for name, index in self._x_indexes.iteritems():
+                s['X']['x'].append({'val': str(X[index]), '@name': name.decode('utf-8')})
+            d['samples']['sample'].append(s)
+        xml = xmltodict.unparse(d, pretty=True).encode('utf-8')
 
-            for sample in self:
-                cust_num = sample.get_cust_num()
-                protol_nums = sample.get_protol_nums()
-                X = sample.get_X()
-                y = sample.get_y()
-                y_pred = sample.get_y_pred()
-                strlist = [str(y_pred), str(y), cust_num]
-                strlist.append(','.join(protol_nums))
-                for item in items:
-                    index = item[1]
-                    strlist.append(str(X[index]))
-                outfile.write('\t'.join(strlist))
-                outfile.write('\n')
+        with open(filename, 'w') as outfile:
+            outfile.write(xml)
