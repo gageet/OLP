@@ -11,28 +11,28 @@ class SamplesBuilder:
     '''
     通过一个用户的三张表生成sample类型数据并返回，通过调用buildSample
     '''
-    def __init__(self, loanFieldName2Index, trnFeatLoans, trnFeatCustNum2ProtolNums, trnLabelLoans, transFieldName2Index, trnFeatTranss, prodFieldName2Index, trnFeatProds):
+    def __init__(self, loanFieldName2Index, featLoans, featCustNum2ProtolNums, labelLoans, transFieldName2Index, featTranss, prodFieldName2Index, featProds):
         self.loanFieldName2Index = loanFieldName2Index
-        self.trnFeatLoans = trnFeatLoans
-        self.trnFeatCustNum2ProtolNums = trnFeatCustNum2ProtolNums
-        self.trnLabelLoans = trnLabelLoans
+        self.featLoans = featLoans
+        self.featCustNum2ProtolNums = featCustNum2ProtolNums
+        self.labelLoans = labelLoans
         self.transFieldName2Index = transFieldName2Index
-        self.trnFeatTranss = trnFeatTranss
+        self.featTranss = featTranss
         self.prodFieldName2Index = prodFieldName2Index
-        self.trnFeatProds = trnFeatProds
+        self.featProds = featProds
 
     def buildSample(self):
         # 生成用户特征
-        fieldName2Index, trnFeats = self.genFeats(self.loanFieldName2Index, self.trnFeatLoans, self.trnFeatCustNum2ProtolNums,
-                                         self.transFieldName2Index, self.trnFeatTranss,
-                                         self.prodFieldName2Index, self.trnFeatProds)
+        fieldName2Index, feats = self.genFeats(self.loanFieldName2Index, self.featLoans, self.featCustNum2ProtolNums,
+                                               self.transFieldName2Index, self.featTranss,
+                                               self.prodFieldName2Index, self.featProds)
         # 生成用户标签
-        trnLabels = self.genLabels(self.loanFieldName2Index, self.trnFeatLoans, self.trnLabelLoans, self.trnFeatCustNum2ProtolNums)
+        labels = self.genLabels(self.loanFieldName2Index, self.featLoans, self.labelLoans, self.featCustNum2ProtolNums)
         # 生成样本
-        trn_samples = self.gen_samples(fieldName2Index, self.trnFeatCustNum2ProtolNums, trnFeats, trnLabels)
-        return trn_samples
+        samples = self.genSamples(fieldName2Index, self.featCustNum2ProtolNums, feats, labels)
+        return samples
 
-    def genFeats(loanFieldName2Index, loans, custNum2ProtolNums, transFieldName2Index, transs, prodFieldName2Index, prods):
+    def genFeats(self, loanFieldName2Index, loans, custNum2ProtolNums, transFieldName2Index, transs, prodFieldName2Index, prods):
         '''
         为每笔贷款生成特征
 
@@ -54,7 +54,7 @@ class SamplesBuilder:
                 ]
         '''
         transFieldName2Index, transs = TransCounter((transFieldName2Index, transs)).countProp()
-        prods = ProdContactCounter((prodFieldName2Index, prods), '2014/3/31').countProdContact()
+        prods = ProdContactCounter((prodFieldName2Index, prods), '2014/3/31').countProdContact()  # TODO
         builder = FeatureBuilder((loanFieldName2Index, loans, custNum2ProtolNums),
                              (transFieldName2Index, transs),
                              prods)
@@ -62,8 +62,7 @@ class SamplesBuilder:
         feats.sort(key=lambda item: item[0])
         return fieldName2Index, feats
 
-
-    def genLabels(loanFieldName2Index, featLoans, labelLoans, custNum2ProtolNums):
+    def genLabels(self, loanFieldName2Index, featLoans, labelLoans, custNum2ProtolNums):
         '''
         为每笔贷款生成类别标签
 
@@ -85,7 +84,7 @@ class SamplesBuilder:
         labels.sort(key=lambda item: item[0])
         return labels
 
-    def gen_samples(x_indexes, cust_num_protol_nums, feats, labels):
+    def genSamples(self, x_indexes, cust_num_protol_nums, feats, labels):
         '''
         将原有数据记录转为Samples格式
         '''

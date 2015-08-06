@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
 
 import os
+import xmltodict
 from OLP.Readers.ReaderTools import UniPrinter
 from OLP.Readers.CMSBReaders import CMSBReader
 from OLP.Readers.LoanFilter import getFilter
-from OLP.Readers.FeatureBuilder import FeatureBuilder
-from OLP.Readers.ProdContactCounter import ProdContactCounter
-from OLP.Readers.TransCounter import TransCounter
-from OLP.Readers.LabelReader import LabelReader
+# from OLP.Readers.FeatureBuilder import FeatureBuilder
+# from OLP.Readers.ProdContactCounter import ProdContactCounter
+# from OLP.Readers.TransCounter import TransCounter
+# from OLP.Readers.LabelReader import LabelReader
 from OLP.core.samples import Sample, Samples
+from OLP.Readers.SamplesBuilder import SamplesBuilder
 from OLP.core.models import get_classifier
 from OLP.core.metrics import get_metric
 import config as cf
@@ -30,62 +32,6 @@ def filterLoans(filterNames, fieldName2Index, loans, custNum2ProtolNums):
     for filter_ in filters:
         fieldName2Index, loans, custNum2ProtolNums = filter_.filter(fieldName2Index, loans, custNum2ProtolNums)
     return loans
-
-
-def genFeats(loanFieldName2Index, loans, custNum2ProtolNums,
-             transFieldName2Index, transs,
-             prodFieldName2Index, prods):
-    '''
-    为每笔贷款生成特征
-
-    Args:
-        loanFieldName2Index (dict): 贷款协议表字段索引
-        loans (dict): 贷款协议表数据
-        transFieldName2Index (dict): 交易流水表字段索引
-        transs (dict): 交易流水表数据
-        prodFieldName2Index (dict): 产品签约表字段索引
-        prods (dict): 产品签约表数据
-
-    Returns:
-        dict: 特征字段索引
-        list: 客户号和特征值，格式为:
-              [
-                  [客户号1, [特征值11, 特征值12, ...]],
-                  [客户号2, [特征值21, 特征值22, ...]],
-                  ...
-              ]
-    '''
-    transFieldName2Index, transs = TransCounter((transFieldName2Index, transs)).countProp()
-    prods = ProdContactCounter((prodFieldName2Index, prods), '2014/3/31').countProdContact()
-    builder = FeatureBuilder((loanFieldName2Index, loans, custNum2ProtolNums),
-                             (transFieldName2Index, transs),
-                             prods)
-    fieldName2Index, feats = builder.buildFeature()
-    feats.sort(key=lambda item: item[0])
-    return fieldName2Index, feats
-
-
-def genLabels(loanFieldName2Index, featLoans, labelLoans, custNum2ProtolNums):
-    '''
-    为每笔贷款生成类别标签
-
-    Args:
-        loanFieldName2Index (dict): 贷款协议表字段索引
-        featLoans (dict): 用于生成特征的贷款协议表数据
-        labelLoans (dict): 用于生成标签的贷款协议表数据
-
-    Returns:
-        list: 客户号和类别标签，格式为:
-              [
-               [客户号1, 类别标签1],
-               [客户号2, 类别标签2],
-               ...
-              ]
-    '''
-    reader = LabelReader((loanFieldName2Index, labelLoans, custNum2ProtolNums), featLoans)
-    labels = reader.readLabel()
-    labels.sort(key=lambda item: item[0])
-    return labels
 
 
 def gen_samples(x_indexes, cust_num_protol_nums, feats, labels):
@@ -150,8 +96,12 @@ def analyze_samples(trn_samples, tst_samples, n, filename):
     trn_neg_std_X = trn_neg_samples.get_std_X()
 
     with open(filename, 'w') as outfile:
+        d = {'samples': {'sample': []}}
         for sample in tst_pos_samples:
-            cust_num = sample.get_cust_num()
+            s = {}
+            s['cust_num'] = sample.get_cust_num()
+            s['protol_nums'] = {'protol_num': sample.get_protol_nums()}
+            s['y_pred'] = sample.get_y_pred()
             X = sample.get_X()
             ratios = []
             for name in top_n_xs:
@@ -160,11 +110,14 @@ def analyze_samples(trn_samples, tst_samples, n, filename):
                 avg_x = trn_neg_avg_X[index]
                 std_x = trn_neg_std_X[index]
                 ratio = abs(x - avg_x) / std_x
-                ratios.append([name, ratio])
-            ratios.sort(key=lambda item: item[1], reverse=True)
-            outfile.write('%s\t' % cust_num)
-            outfile.write('\t'.join(['%s:%.4f' % (r[0], r[1]) for r in ratios]))
-            outfile.write('\n')
+                ratios.append([name, x, avg_x, std_x, ratio])
+            ratios.sort(key=lambda item: item[4], reverse=True)
+            s['X'] = {'x': []}
+            for name, x, avg_x, std_x, ratio in ratios:
+                s['X']['x'].append({'ratio': str(ratio), 'val': str(x), 'avg_val': str(avg_x), 'std_val': str(std_x), '@name': name.decode('utf-8')})
+            d['samples']['sample'].append(s)
+        xml = xmltodict.unparse(d, pretty=True).encode('utf-8')
+        outfile.write(xml)
 
 
 def fit_predict(model_name, model_param, trn_samples, tst_samples):
@@ -240,21 +193,13 @@ def backTest():
     tstFeatLoans = filterLoans(cf.filterNames, loanFieldName2Index, tstFeatLoans, tstFeatCustNum2ProtolNums)
 
     # ----------------------------------------------------------------------
-    # 生成用户特征
-    fieldName2Index, trnFeats = genFeats(loanFieldName2Index, trnFeatLoans, trnFeatCustNum2ProtolNums,
-                                         transFieldName2Index, trnFeatTranss,
-                                         prodFieldName2Index, trnFeatProds)
-    fieldName2Index, tstFeats = genFeats(loanFieldName2Index, tstFeatLoans, tstFeatCustNum2ProtolNums,
-                                         transFieldName2Index, tstFeatTranss,
-                                         prodFieldName2Index, tstFeatProds)
-
-    # 生成用户标签
-    trnLabels = genLabels(loanFieldName2Index, trnFeatLoans, trnLabelLoans, trnFeatCustNum2ProtolNums)
-    tstLabels = genLabels(loanFieldName2Index, tstFeatLoans, tstLabelLoans, tstFeatCustNum2ProtolNums)
-
     # 生成样本
-    trn_samples = gen_samples(fieldName2Index, trnFeatCustNum2ProtolNums, trnFeats, trnLabels)
-    tst_samples = gen_samples(fieldName2Index, tstFeatCustNum2ProtolNums, tstFeats, tstLabels)
+    trn_samples_builder = SamplesBuilder(loanFieldName2Index, trnFeatLoans, trnFeatCustNum2ProtolNums, trnLabelLoans,
+                                         transFieldName2Index, trnFeatTranss, prodFieldName2Index, trnFeatProds)
+    tst_samples_builder = SamplesBuilder(loanFieldName2Index, tstFeatLoans, tstFeatCustNum2ProtolNums, tstLabelLoans,
+                                         transFieldName2Index, tstFeatTranss, prodFieldName2Index, tstFeatProds)
+    trn_samples = trn_samples_builder.buildSample()
+    tst_samples = tst_samples_builder.buildSample()
 
     # ----------------------------------------------------------------------
     # 训练模型并预测

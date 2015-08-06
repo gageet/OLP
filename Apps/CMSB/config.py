@@ -75,7 +75,7 @@ fieldName2fieldType = {
 # 过滤
 filterNames = [
     'OLP.Readers.LoanFilter.CleanedLoanFilter',
-    #'OLP.Readers.LoanFilter.CustCodeFilter',
+    # 'OLP.Readers.LoanFilter.CustCodeFilter',
     'OLP.Readers.LoanFilter.ThisMonthLoanFilter',
 ]
 
